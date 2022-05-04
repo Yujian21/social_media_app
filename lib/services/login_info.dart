@@ -57,7 +57,7 @@ class LoginInfo extends ChangeNotifier {
           .get()
           .then((QuerySnapshot querySnapshot) {
         if (querySnapshot.docs.isNotEmpty) {
-          debugPrint('Entry found');
+          debugPrint('2FA entry found');
           doubleAuthenticationActivated = true;
           notifyListeners();
         }
