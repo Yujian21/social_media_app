@@ -15,8 +15,8 @@ class UnknownPage extends StatelessWidget {
         ),
         body: Center(
           child: Text(
-            user != null ? user.id.toString() : 'null',
-            style: TextStyle(color: Colors.black),
+            user.id.toString(),
+            style: const TextStyle(color: Colors.black),
           ),
         ));
   }

@@ -68,6 +68,7 @@ class LoginInfo extends ChangeNotifier {
       switch (e.code) {
         case 'user-not-found':
           debugPrint('No user found for that email.');
+          alert();
           break;
         case 'wrong-password':
           debugPrint('Wrong password provided for that user.');

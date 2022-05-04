@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:social_media_app/models/user.dart';
 import 'package:social_media_app/services/login_info.dart';
 
@@ -24,8 +25,12 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              user != null ? user.id.toString() : 'null',
-              style: TextStyle(color: Colors.black),
+              user.id.toString(),
+              style: const TextStyle(color: Colors.black),
+            ),
+            QrImage(
+              data: user.userId,
+              size: 200,
             ),
             ElevatedButton(
                 onPressed: () {
