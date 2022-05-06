@@ -1,6 +1,6 @@
 # social_media_app
 
-A new Flutter project.
+A dummy app to supplement Biothenticator.
 
 ## Getting Started
 
