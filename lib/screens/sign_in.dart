@@ -9,8 +9,6 @@ import 'package:social_media_app/services/authentication.dart';
 import 'package:social_media_app/services/login_info.dart';
 import 'package:social_media_app/theme/style.dart';
 
-import '../main.dart';
-
 class SignInPage extends StatelessWidget {
   const SignInPage({Key? key}) : super(key: key);
 
@@ -85,6 +83,7 @@ class SignInPage extends StatelessWidget {
     // End of widget generation functions
     //
     // ----------------------------------------------------------------------------------------------------------------------------------------------------
+
     return Scaffold(
       body: Row(
         children: [

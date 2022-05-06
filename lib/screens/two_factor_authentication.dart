@@ -88,7 +88,7 @@ class _TwoFactorAuthenticationPageState
                       fontWeight: FontWeight.bold,
                       fontSize: 24),
                 ),
-                subtitle: Text(documentData['2fa-enabled'],
+                subtitle: Text(documentData['2fa-enabled'].toString(),
                     style: const TextStyle(color: Colors.black)),
               );
             }).toList(),
