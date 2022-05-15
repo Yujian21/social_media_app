@@ -79,7 +79,7 @@ class AuthenticationService {
           weakPassword();
           break;
         case 'email-already-in-use':
-          debugPrint('The account already exists for that email.');
+          debugPrint('An account already exists for that email.');
           emailInUse();
           break;
         default:

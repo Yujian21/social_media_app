@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 
-// Colours declaration
-MaterialColor colorCustomDarkBlue = MaterialColor(0xFF001D47, color);
-MaterialColor colorCustomDarkBlueAlt = MaterialColor(0xFF182D4C, color);
-MaterialColor colorCustomDarkBlueGrandeur = MaterialColor(0xFF000046, color);
-MaterialColor colorCustomDarkBlueGrandeurAlt = MaterialColor(0xFF1cb5e0, color);
-MaterialColor colorCustomLightBlue = MaterialColor(0xFF2196f3, color);
+// Colour collection
+MaterialColor appThemePrimary = MaterialColor(0xFF232231, color);
+MaterialColor appThemeSecondary = MaterialColor(0xFF262535, color);
+MaterialColor appThemeTertiary = MaterialColor(0xFF7a42db, color);
 
 // Colour scheme
 Map<int, Color> color = {

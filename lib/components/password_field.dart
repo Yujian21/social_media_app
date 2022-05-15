@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/style.dart';
+
 // ignore: must_be_immutable
 class PasswordField extends StatefulWidget {
   ValueChanged<String> onChanged;
@@ -18,28 +20,27 @@ class _PasswordFieldState extends State<PasswordField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-        onChanged: widget.onChanged,
-        obscureText: !passwordVisible,
-        decoration: InputDecoration(
-            fillColor: Colors.blueGrey.shade50,
-            filled: true,
+    return Theme(
+      child: TextFormField(
+          onChanged: widget.onChanged,
+          obscureText: !passwordVisible,
+          decoration: InputDecoration(
             hintText: 'Password',
-            prefixIcon: const Icon(Icons.lock_outline),
             suffixIcon: IconButton(
               icon: Icon(
                 passwordVisible ? Icons.visibility : Icons.visibility_off,
-                color: Colors.grey,
+                color: Colors.white54,
               ),
               onPressed: () {
                 setState(() => passwordVisible = !passwordVisible);
               },
             ),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.blueGrey.shade50)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.blueGrey.shade50))));
+          )),
+      data: Theme.of(context).copyWith(
+        colorScheme: ThemeData().colorScheme.copyWith(
+              primary: appThemePrimary,
+            ),
+      ),
+    );
   }
 }

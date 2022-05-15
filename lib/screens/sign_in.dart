@@ -4,9 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:social_media_app/components/email_field.dart';
 import 'package:social_media_app/components/glass_morphism.dart';
 import 'package:social_media_app/components/password_field.dart';
-import 'package:social_media_app/models/user.dart';
-import 'package:social_media_app/services/authentication.dart';
-import 'package:social_media_app/services/login_info.dart';
+// import 'package:social_media_app/models/user.dart';
+import 'package:social_media_app/services/authentication_info.dart';
 import 'package:social_media_app/theme/style.dart';
 
 class SignInPage extends StatelessWidget {
@@ -14,9 +13,6 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Resgister Firebase Authentication service
-    AuthenticationService _authenticationService = AuthenticationService();
-
     // Email and password variables declaration
     String email = '';
     String password = '';
@@ -28,16 +24,17 @@ class SignInPage extends StatelessWidget {
     // ----------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Alert dialog
-    Future<dynamic> _generateAlertDialog(BuildContext context) {
+    Future<dynamic> _generateAlertDialog(
+        BuildContext context, String title, String content) {
       return showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-                title: const Text(
-                  'Incorrect password',
-                  style: TextStyle(color: Colors.black38),
+                backgroundColor: appThemeSecondary,
+                title: Text(
+                  title,
+                  style: const TextStyle(color: Colors.white),
                 ),
-                content: const Text(
-                    'The password does not match with that of the given email.'),
+                content: Text(content),
                 actions: <Widget>[
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -90,11 +87,7 @@ class SignInPage extends StatelessWidget {
           Expanded(
               child: Stack(alignment: Alignment.center, children: [
             Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                colorCustomDarkBlueGrandeur,
-                colorCustomDarkBlueGrandeurAlt
-              ])),
+              decoration: BoxDecoration(color: appThemePrimary),
             ),
             Icon(
               Icons.blur_on_sharp,
@@ -129,11 +122,18 @@ class SignInPage extends StatelessWidget {
                     // Sign in button
                     ElevatedButton(
                         onPressed: () {
-                          context.read<LoginInfo>().firebaseSignIn(
+                          context.read<AuthenticationInfo>().firebaseSignIn(
                               context,
                               email,
                               password,
-                              () => _generateAlertDialog(context));
+                              () => _generateAlertDialog(
+                                  context,
+                                  'Account does not exist',
+                                  'The provided email address is not associated to any account.'),
+                              () => _generateAlertDialog(
+                                  context,
+                                  'Incorrect password',
+                                  'The password provided is incorrect.'));
 
                           // _authenticationService.firebaseSignIn(context, email,
                           //     password, () => _generateAlertDialog(context));

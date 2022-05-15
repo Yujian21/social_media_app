@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:social_media_app/components/email_field.dart';
 import 'package:social_media_app/components/glass_morphism.dart';
 import 'package:social_media_app/components/password_field.dart';
-import 'package:social_media_app/services/authentication.dart';
+import 'package:social_media_app/services/authentication_info.dart';
 import 'package:social_media_app/theme/style.dart';
 
 class SignUpPage extends StatelessWidget {
@@ -11,9 +11,6 @@ class SignUpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Resgister Firebase Authentication service
-    AuthenticationService _authenticationService = AuthenticationService();
-
     // Email and password variables declaration
     String email = '';
     String password = '';
@@ -30,9 +27,10 @@ class SignUpPage extends StatelessWidget {
       return showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
+                backgroundColor: appThemeSecondary,
                 title: Text(
                   title,
-                  style: const TextStyle(color: Colors.black38),
+                  style: const TextStyle(color: Colors.white),
                 ),
                 content: Text(content),
                 actions: <Widget>[
@@ -87,11 +85,7 @@ class SignUpPage extends StatelessWidget {
           Expanded(
               child: Stack(alignment: Alignment.center, children: [
             Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                colorCustomDarkBlueGrandeur,
-                colorCustomDarkBlueGrandeurAlt
-              ])),
+              decoration: BoxDecoration(color: appThemePrimary),
             ),
             Icon(
               Icons.blur_on_sharp,
@@ -125,7 +119,7 @@ class SignUpPage extends StatelessWidget {
                     // Sign up button
                     ElevatedButton(
                         onPressed: () async {
-                          _authenticationService.firebaseSignUp(
+                          context.read<AuthenticationInfo>().firebaseSignUp(
                               email,
                               password,
                               () => _generateAlertDialog(

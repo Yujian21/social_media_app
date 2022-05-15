@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:social_media_app/models/user.dart';
-import 'package:social_media_app/services/login_info.dart';
+// import 'package:social_media_app/models/user.dart';
+import '../services/authentication_info.dart';
+import '../components/side_menu.dart';
+import '../theme/style.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,32 +18,72 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<LoginInfo>(context);
+    final user = Provider.of<AuthenticationInfo>(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+      drawer: const SideMenu(),
+      body: SafeArea(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              user.id.toString(),
-              style: const TextStyle(color: Colors.black),
+            const Expanded(
+              child: SideMenu(),
             ),
-            QrImage(
-              data: user.userId,
-              size: 200,
+            Expanded(
+              flex: 5,
+              child: Column(
+                children: [
+                  Form(
+                      child: Row(
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
+                          child: TextFormField(
+                              keyboardType: TextInputType.multiline,
+                              minLines: 2,
+                              maxLines: 5,
+                              decoration: const InputDecoration(
+                                hintText: 'Type something...',
+                              )),
+                        ),
+                      ),
+                      Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ElevatedButton(
+                                onPressed: () {}, child: const Text('Post')),
+                          ))
+                    ],
+                  )),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Divider(
+                      thickness: 2,
+                      color: Colors.white54,
+                    ),
+                  ),
+                  Text(
+                    user.id.toString(),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
             ),
-            ElevatedButton(
-                onPressed: () {
-                  context.read<LoginInfo>().firebaseSignOut();
-                },
-                child: const Text('Sign out'))
           ],
         ),
       ),
     );
+
+    //               await biothenticatorFirestore
+    //                   .collection('test')
+    //                   .add({"timestamp": FieldValue.serverTimestamp()});
+
+    //               // FirebaseFirestore.instance
+    //               //     .collection('2fa-status')
+    //               //     .add({"timestamp": FieldValue.serverTimestamp()});
+    //               // context.read<AuthenticationInfo>().firebaseSignOut();
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:social_media_app/theme/style.dart';
 
 // ignore: must_be_immutable
 class EmailField extends StatefulWidget {
@@ -18,19 +19,18 @@ class EmailField extends StatefulWidget {
 class _EmailFieldState extends State<EmailField> {
   @override
   Widget build(BuildContext context) {
-    return TextField(
-        onChanged: widget.onChanged,
-        // controller: widget.controller,
-        decoration: InputDecoration(
-            fillColor: Colors.blueGrey.shade50,
-            filled: true,
+    return Theme(
+      child: TextFormField(
+          onChanged: widget.onChanged,
+          // controller: widget.controller,
+          decoration: const InputDecoration(
             hintText: 'E-mail',
-            prefixIcon: const Icon(Icons.mail_outline),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.blueGrey.shade50)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.blueGrey.shade50))));
+          )),
+      data: Theme.of(context).copyWith(
+        colorScheme: ThemeData().colorScheme.copyWith(
+              primary: appThemePrimary,
+            ),
+      ),
+    );
   }
 }

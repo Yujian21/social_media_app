@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/services/login_info.dart';
+import 'package:social_media_app/services/authentication_info.dart';
 
 class TwoFactorAuthenticationPage extends StatefulWidget {
   const TwoFactorAuthenticationPage({Key? key}) : super(key: key);
@@ -16,38 +17,24 @@ class _TwoFactorAuthenticationPageState
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-    //   final user = Provider.of<LoginInfo>(context, listen: false);
-    //   final currentUser2FA = FirebaseFirestore.instance
-    //       .collection('2fa-status')
-    //       .where('userId', isEqualTo: user.id);
-    //   currentUser2FA.snapshots().listen((querySnapshot) {
-    //     if (querySnapshot != null) {
-    //       debugPrint('Entry found.');
-    //       debugPrint(Provider.of<LoginInfo>(context, listen: false)
-    //           .doubleAuthenticated
-    //           .toString());
-    //       querySnapshot.docChanges.forEach((change) {
-    //         context.read<LoginInfo>().isDoubleAuthenticated(context);
-    //       });
-
-    //       debugPrint(Provider.of<LoginInfo>(context, listen: false)
-    //           .doubleAuthenticated
-    //           .toString());
-    //     }
-    //   });
-    // });
+    
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<LoginInfo>(context, listen: false);
+    final user = Provider.of<AuthenticationInfo>(context, listen: false);
+
+    // Firebase app dedicated to Biothenticator
+    FirebaseApp biothenticator = Firebase.app('biothenticator');
+    FirebaseFirestore biothenticatorFirestore =
+        FirebaseFirestore.instanceFor(app: biothenticator);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('2FA'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
+        stream: biothenticatorFirestore
             .collection('2fa-status')
             .where('userId', isEqualTo: user.userId)
             .snapshots(),
@@ -67,7 +54,17 @@ class _TwoFactorAuthenticationPageState
               if (documentDetails['isAuthenticated'] == true) {
                 debugPrint('Is double authenticated');
                 WidgetsBinding.instance!.addPostFrameCallback((_) {
-                  context.read<LoginInfo>().isDoubleAuthenticated(context);
+                  // Update local double authentication state
+                  context
+                      .read<AuthenticationInfo>()
+                      .isDoubleAuthenticated(context);
+
+                  // Reset serverside double authentication status
+                  // (Prone to change)
+                  biothenticatorFirestore
+                      .collection('2fa-status')
+                      .doc(document.id)
+                      .update({"isAuthenticated": false});
                 });
               } else {
                 debugPrint('Is not double authenticated');
@@ -81,15 +78,13 @@ class _TwoFactorAuthenticationPageState
               Map<String, dynamic> documentData =
                   document.data()! as Map<String, dynamic>;
               return ListTile(
+                leading: const Icon(Icons.fingerprint_outlined),
                 title: Text(
                   documentData['userId'],
                   style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24),
+                      fontWeight: FontWeight.bold, fontSize: 24),
                 ),
-                subtitle: Text(documentData['2fa-enabled'].toString(),
-                    style: const TextStyle(color: Colors.black)),
+                subtitle: const Text('Please authenticate via Biothenticator.'),
               );
             }).toList(),
           );
