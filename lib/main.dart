@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:social_media_app/models/user.dart';
+import 'package:social_media_app/screens/edit_profile.dart';
 import 'package:social_media_app/screens/home.dart';
 import 'package:social_media_app/screens/profile.dart';
 import 'package:social_media_app/screens/settings.dart';
@@ -37,8 +39,13 @@ void main() async {
           messagingSenderId: "1042114986164",
           projectId: "biometrics-40713"));
 
-  runApp(ChangeNotifierProvider<AuthenticationInfo>.value(
-      value: authenticationInfo, child: const MyApp()));
+  runApp(
+    MultiProvider(providers: [
+      ChangeNotifierProvider<AuthenticationInfo>.value(
+          value: authenticationInfo),
+
+    ], child: const MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -84,6 +91,11 @@ class MyApp extends StatelessWidget {
             path: '/profile',
             builder: (BuildContext context, GoRouterState state) =>
                 const ProfilePage(),
+          ),
+          GoRoute(
+            path: '/edit-profile',
+            builder: (BuildContext context, GoRouterState state) =>
+                const EditProfilePage(),
           ),
         ],
         redirect: (state) {

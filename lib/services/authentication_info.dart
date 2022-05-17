@@ -29,8 +29,9 @@ class AuthenticationInfo extends ChangeNotifier {
   }
 
   // Mapping Firebase User model to that of local user model
-  UserModel? _createUserFromFirebaseUser(User? user) {
+  UserModel? createUserFromFirebaseUser(User? user) {
     if (user != null) {
+      debugPrint('User is not null.');
       var currentUser = UserModel(id: user.uid);
       debugPrint('Local user model created!');
       debugPrint('Local user model ID: ' + currentUser.id.toString());
@@ -40,6 +41,10 @@ class AuthenticationInfo extends ChangeNotifier {
     }
     debugPrint('User is null.');
     return null;
+  }
+
+  Stream<UserModel?> get user {
+    return auth.authStateChanges().map(createUserFromFirebaseUser);
   }
 
   // Firebase email & password authentication callback
@@ -69,7 +74,7 @@ class AuthenticationInfo extends ChangeNotifier {
         }
       });
 
-      _createUserFromFirebaseUser(user);
+      createUserFromFirebaseUser(user);
       debugPrint('Sign in successful');
       notifyListeners();
     } on FirebaseAuthException catch (e) {
@@ -99,17 +104,17 @@ class AuthenticationInfo extends ChangeNotifier {
 
       // Store the current user in memory for further use later on
       final user = auth.currentUser;
-      _createUserFromFirebaseUser(user);
+      createUserFromFirebaseUser(user);
 
       // Reset local double authentication status to false
       doubleAuthenticationActivated = false;
       debugPrint('Sign up successful');
 
-      // create new user entry in Firestore
+      // Create new user entry in Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user!.uid)
-          .set({"name": email, "email": email});
+          .set({"name": email, "email": email, "profileImageUrl": ''});
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       switch (e.code) {

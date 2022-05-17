@@ -134,9 +134,6 @@ class SignInPage extends StatelessWidget {
                                   context,
                                   'Incorrect password',
                                   'The password provided is incorrect.'));
-
-                          // _authenticationService.firebaseSignIn(context, email,
-                          //     password, () => _generateAlertDialog(context));
                         },
                         child: const Text('Sign in')),
                     _generateSizedBox(),

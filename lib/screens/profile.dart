@@ -1,11 +1,11 @@
-import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:social_media_app/models/user.dart';
 import 'package:social_media_app/theme/style.dart';
-import '../components/email_field.dart';
+import '../services/user_info.dart' as user_Info;
 import '../components/side_menu.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -16,99 +16,86 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  user_Info.UserInfo userInfo = user_Info.UserInfo();
   PlatformFile? uploadFile;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        drawer: const SideMenu(),
-        body: SafeArea(
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Expanded(
-            flex: 1,
-            child: SideMenu(),
-          ),
-          Expanded(
-              flex: 5,
-              child: Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Column(children: [
-                  Stack(
-                      alignment: AlignmentDirectional.bottomCenter,
-                      children: <Widget>[
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () => uploadImage(),
-                            child: Container(
-                              clipBehavior: Clip.antiAlias,
-                              width: 250,
-                              height: 250,
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: appThemeTertiary),
-                              child: uploadFile == null
-                                  ? const Icon(
-                                      Icons.photo,
-                                      color: Colors.white54,
-                                    )
-                                  : Stack(
-                                      alignment: AlignmentDirectional.center,
-                                      children: <Widget>[
-                                          Image.memory(Uint8List.fromList(
-                                              uploadFile!.bytes!.toList())),
-                                          const Center(
-                                            child: Icon(
-                                              Icons.edit,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        ]),
-                            ),
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
+    //
+    // The following functions are used to generate the widget components for the edit profile page
+    //
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Sized boxes (White spaces)
+    Widget _generateSizedBox() {
+      return const SizedBox(
+        height: 15,
+      );
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
+    //
+    // End of widget generation functions
+    //
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+    return MultiProvider(
+        providers: [
+          StreamProvider<UserModel?>(
+              create: (_) =>
+                  userInfo.getUserInfo(FirebaseAuth.instance.currentUser!.uid),
+              initialData: null)
+        ],
+        child: Builder(
+          builder: (BuildContext context) {
+            BuildContext rootContext = context;
+            final userProfile = Provider.of<UserModel?>(rootContext);
+
+            return userProfile == null
+                ? Scaffold(
+                    body: Center(
+                        child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                appThemeTertiary))))
+                : Scaffold(
+                    drawer: const SideMenu(),
+                    body: SafeArea(
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          const Expanded(
+                            flex: 1,
+                            child: SideMenu(),
                           ),
-                        ),
-                      ]),
-                  SizedBox(
-                      width: 250,
-                      child: Form(
-                          child: TextFormField(
-                              decoration:
-                                  const InputDecoration(hintText: 'Name'),
-                              onChanged: ((value) {})))),
-                  ElevatedButton(
-                      onPressed: () {
-                        updateProfile();
-                      },
-                      child: const Text('Upload image')),
-                  Image.network(
-                      'https://docs.flutter.dev/assets/images/dash/dash-fainting.gif')
-                ]),
-              ))
-        ])));
-  }
-
-  uploadImage() async {
-    FilePickerResult? uploadInput = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['jpg', 'png', 'jpeg'],
-    );
-    if (uploadInput != null) {
-      setState(() {
-        uploadFile = uploadInput.files.first;
-      });
-    }
-  }
-
-  updateProfile() async {
-    if (uploadFile != null) {
-      var fileBytes = uploadFile!.bytes;
-      var fileExtension = uploadFile!.extension;
-      final storageRef = FirebaseStorage.instance.ref(
-          'uploads/${FirebaseAuth.instance.currentUser!.uid}/profile/profile_picture');
-      TaskSnapshot uploadTaskSnapshot = await storageRef.putData(
-          fileBytes!, SettableMetadata(contentType: 'image/$fileExtension'));
-
-      final imageUri = await uploadTaskSnapshot.ref.getDownloadURL();
-      debugPrint(imageUri);
-    }
+                          Expanded(
+                              flex: 5,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 16),
+                                child: Column(children: [
+                                  Stack(children: <Widget>[
+                                    CircleAvatar(
+                                      radius: 125,
+                                      backgroundImage: NetworkImage(
+                                          Provider.of<UserModel?>(rootContext)!
+                                              .profileImageUrl
+                                              .toString()),
+                                    ),
+                                  ]),
+                                  _generateSizedBox(),
+                                  Text(Provider.of<UserModel?>(rootContext)!
+                                      .name
+                                      .toString()),
+                                  _generateSizedBox(),
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        GoRouter.of(context)
+                                            .go('/edit-profile');
+                                      },
+                                      child: const Text('Edit profile')),
+                                ]),
+                              ))
+                        ])));
+          },
+        ));
   }
 }
