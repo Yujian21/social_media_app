@@ -61,6 +61,7 @@ class AuthenticationInfo extends ChangeNotifier {
 
       // Store the current user in memory for further use later on
       final user = auth.currentUser;
+      
 
       // Using the current user ID, verify if he/she has 2FA enabled
       await biothenticatorFirestore

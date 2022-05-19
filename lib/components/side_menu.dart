@@ -39,6 +39,13 @@ class SideMenu extends StatelessWidget {
             },
           ),
           DrawerListTile(
+            title: "Search",
+            icon: Icons.person_search,
+            onPressed: () {
+              GoRouter.of(context).go('/search');
+            },
+          ),
+          DrawerListTile(
             title: "Settings",
             icon: Icons.settings,
             onPressed: () {

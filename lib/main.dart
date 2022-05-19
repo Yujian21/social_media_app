@@ -4,11 +4,13 @@ import 'package:social_media_app/models/user.dart';
 import 'package:social_media_app/screens/edit_profile.dart';
 import 'package:social_media_app/screens/home.dart';
 import 'package:social_media_app/screens/profile.dart';
+import 'package:social_media_app/screens/search.dart';
 import 'package:social_media_app/screens/settings.dart';
 import 'package:social_media_app/screens/sign_in.dart';
 import 'package:social_media_app/screens/sign_up.dart';
 import 'package:social_media_app/screens/two_factor_authentication.dart';
 import 'package:social_media_app/screens/unknown.dart';
+import 'package:social_media_app/screens/visit.dart';
 import 'package:social_media_app/services/authentication_info.dart';
 import 'theme/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -43,7 +45,6 @@ void main() async {
     MultiProvider(providers: [
       ChangeNotifierProvider<AuthenticationInfo>.value(
           value: authenticationInfo),
-
     ], child: const MyApp()),
   );
 }
@@ -96,6 +97,16 @@ class MyApp extends StatelessWidget {
             path: '/edit-profile',
             builder: (BuildContext context, GoRouterState state) =>
                 const EditProfilePage(),
+          ),
+          GoRoute(
+            path: '/search',
+            builder: (BuildContext context, GoRouterState state) =>
+                const SearchPage(),
+          ),
+          GoRoute(
+            path: '/visit-profile',
+            builder: (BuildContext context, GoRouterState state) =>
+                 VisitPage(user: state.extra! as UserModel),
           ),
         ],
         redirect: (state) {

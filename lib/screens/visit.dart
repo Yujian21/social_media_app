@@ -8,16 +8,26 @@ import 'package:social_media_app/theme/style.dart';
 import '../services/user_info.dart' as user_info;
 import '../components/side_menu.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+class VisitPage extends StatefulWidget {
+  final UserModel user;
+  const VisitPage({Key? key, required this.user}) : super(key: key);
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<VisitPage> createState() => _VisitPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _VisitPageState extends State<VisitPage> {
   user_info.UserInfo userInfo = user_info.UserInfo();
   PlatformFile? uploadFile;
+
+  @override
+  void initState() {
+    if (widget.user != null) {
+      debugPrint(widget.user.id);
+    }
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     // ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -42,14 +52,19 @@ class _ProfilePageState extends State<ProfilePage> {
     return MultiProvider(
         providers: [
           StreamProvider<UserModel?>(
-              create: (_) =>
-                  userInfo.getUserInfo(FirebaseAuth.instance.currentUser!.uid),
-              initialData: null)
+              create: (_) => userInfo.getUserInfo(widget.user.id),
+              initialData: null),
+          StreamProvider<bool?>.value(
+              value: userInfo.isFollowing(
+                  FirebaseAuth.instance.currentUser!.uid, widget.user.name),
+              initialData: false)
         ],
         child: Builder(
           builder: (BuildContext context) {
             BuildContext rootContext = context;
             final userProfile = Provider.of<UserModel?>(rootContext);
+            final isFollowing = Provider.of<bool?>(rootContext);
+            debugPrint('am following: ' + isFollowing.toString());
 
             return userProfile == null
                 ? Scaffold(
@@ -86,12 +101,22 @@ class _ProfilePageState extends State<ProfilePage> {
                                       .name
                                       .toString()),
                                   _generateSizedBox(),
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        GoRouter.of(context)
-                                            .go('/edit-profile');
-                                      },
-                                      child: const Text('Edit profile')),
+                                  if (isFollowing != null &&
+                                      isFollowing == true)
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          userInfo.unfollowUser(widget.user.id);
+                                          debugPrint(isFollowing.toString());
+                                        },
+                                        child: const Text('Unfollow'))
+                                  else if (isFollowing != null &&
+                                      isFollowing == false)
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          userInfo.followUser(widget.user.id);
+                                          debugPrint(isFollowing.toString());
+                                        },
+                                        child: const Text('Follow'))
                                 ]),
                               ))
                         ])));

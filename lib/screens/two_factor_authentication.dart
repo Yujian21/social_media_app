@@ -17,7 +17,6 @@ class _TwoFactorAuthenticationPageState
   @override
   void initState() {
     super.initState();
-    
   }
 
   @override
@@ -50,6 +49,7 @@ class _TwoFactorAuthenticationPageState
           if (snapshot.hasData) {
             var allDocuments = snapshot.data!.docs;
             for (var document in allDocuments) {
+              debugPrint(document.id);
               dynamic documentDetails = document.data() as Map;
               if (documentDetails['isAuthenticated'] == true) {
                 debugPrint('Is double authenticated');
