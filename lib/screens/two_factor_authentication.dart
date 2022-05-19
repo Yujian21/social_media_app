@@ -14,9 +14,17 @@ class TwoFactorAuthenticationPage extends StatefulWidget {
 
 class _TwoFactorAuthenticationPageState
     extends State<TwoFactorAuthenticationPage> {
+  String? docId;
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((_) async {
+      docId = await Provider.of<AuthenticationInfo>(context, listen: false)
+          .logAttempt();
+      setState(() {
+        docId;
+      });
+    });
   }
 
   @override
@@ -28,68 +36,79 @@ class _TwoFactorAuthenticationPageState
     FirebaseFirestore biothenticatorFirestore =
         FirebaseFirestore.instanceFor(app: biothenticator);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('2FA'),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: biothenticatorFirestore
-            .collection('2fa-status')
-            .where('userId', isEqualTo: user.userId)
-            .snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasError) {
-            return const Text('Something went wrong');
-          }
+    if (docId == null) {
+      return const Scaffold(
+        body: CircularProgressIndicator(),
+      );
+    } else {
+      debugPrint(docId);
+      debugPrint(user.userId);
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('2FA'),
+        ),
+        body: StreamBuilder<QuerySnapshot>(
+          stream: biothenticatorFirestore
+              .collection('2fa-status')
+              .doc(user.userId)
+              .collection('attempts')
+              .where(FieldPath.documentId, isEqualTo: docId.toString())
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return const Text('Something went wrong');
+            }
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Text("Loading");
-          }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text("Loading");
+            }
+            if (snapshot.hasData) {
+              var documents = snapshot.data!.docs;
 
-          if (snapshot.hasData) {
-            var allDocuments = snapshot.data!.docs;
-            for (var document in allDocuments) {
-              debugPrint(document.id);
-              dynamic documentDetails = document.data() as Map;
-              if (documentDetails['isAuthenticated'] == true) {
-                debugPrint('Is double authenticated');
-                WidgetsBinding.instance!.addPostFrameCallback((_) {
-                  // Update local double authentication state
-                  context
-                      .read<AuthenticationInfo>()
-                      .isDoubleAuthenticated(context);
+              if (documents != []) {
+                debugPrint(documents.toString());
+                debugPrint(documents[0]['isAuthenticated'].toString());
 
-                  // Reset serverside double authentication status
-                  // (Prone to change)
-                  biothenticatorFirestore
-                      .collection('2fa-status')
-                      .doc(document.id)
-                      .update({"isAuthenticated": false});
-                });
-              } else {
-                debugPrint('Is not double authenticated');
+                if (documents[0]['isAuthenticated'] == true) {
+                  debugPrint('Is double authenticated');
+                  WidgetsBinding.instance!.addPostFrameCallback((_) {
+                    // Update local double authentication state
+                    context
+                        .read<AuthenticationInfo>()
+                        .isDoubleAuthenticated(context);
+
+                    // Add the sign in attempt to the logs
+                    biothenticatorFirestore
+                        .collection('2fa-status')
+                        .doc(user.userId)
+                        .collection('logs')
+                        .doc(snapshot.data!.docs[0].id)
+                        .set({
+                      'isAuthenticated': true,
+                      'timestamp': FieldValue.serverTimestamp()
+                    });
+
+                    // Remove the sign in attempt from the list of attempts that
+                    // are actively seeking for authentication
+                    Future.delayed(const Duration(seconds: 2), () {
+                      biothenticatorFirestore
+                          .collection('2fa-status')
+                          .doc(user.userId)
+                          .collection('attempts')
+                          .doc(snapshot.data!.docs[0].id)
+                          .delete();
+                    });
+                  });
+                } else {
+                  debugPrint('Is not double authenticated');
+                }
+                return const Text('Please authenticate via Biothenticator');
               }
             }
-          }
-
-          return ListView(
-            children: snapshot.data!.docs.map((DocumentSnapshot document) {
-              // Document data
-              Map<String, dynamic> documentData =
-                  document.data()! as Map<String, dynamic>;
-              return ListTile(
-                leading: const Icon(Icons.fingerprint_outlined),
-                title: Text(
-                  documentData['userId'],
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 24),
-                ),
-                subtitle: const Text('Please authenticate via Biothenticator.'),
-              );
-            }).toList(),
-          );
-        },
-      ),
-    );
+            return const Text('Something went wrong...  ;(');
+          },
+        ),
+      );
+    }
   }
 }

@@ -28,6 +28,24 @@ class AuthenticationInfo extends ChangeNotifier {
     notifyListeners();
   }
 
+// Double authentication attempt
+  Future<String> logAttempt() async {
+    // Firebase app dedicated to Biothenticator
+    FirebaseApp biothenticator = Firebase.app('biothenticator');
+    FirebaseFirestore biothenticatorFirestore =
+        FirebaseFirestore.instanceFor(app: biothenticator);
+
+    DocumentReference doc = await biothenticatorFirestore
+        .collection('2fa-status')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('attempts')
+        .add({
+      "isAuthenticated": false,
+      "timestamp": FieldValue.serverTimestamp()
+    });
+    return doc.id;
+  }
+
   // Mapping Firebase User model to that of local user model
   UserModel? createUserFromFirebaseUser(User? user) {
     if (user != null) {
@@ -61,17 +79,18 @@ class AuthenticationInfo extends ChangeNotifier {
 
       // Store the current user in memory for further use later on
       final user = auth.currentUser;
-      
 
       // Using the current user ID, verify if he/she has 2FA enabled
       await biothenticatorFirestore
           .collection('2fa-status')
-          .where('userId', isEqualTo: user!.uid)
+          .where(FieldPath.documentId, isEqualTo: user!.uid)
           .get()
           .then((QuerySnapshot querySnapshot) {
         if (querySnapshot.docs.isNotEmpty) {
           debugPrint('2FA entry found');
           doubleAuthenticationActivated = true;
+        } else {
+          debugPrint('2FA entry not found');
         }
       });
 
