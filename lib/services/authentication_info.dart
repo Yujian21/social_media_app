@@ -28,8 +28,8 @@ class AuthenticationInfo extends ChangeNotifier {
     notifyListeners();
   }
 
-// Double authentication attempt
-  Future<String> logAttempt() async {
+// Add double authentication attempt callback
+  Future<String> addAttempt() async {
     // Firebase app dedicated to Biothenticator
     FirebaseApp biothenticator = Firebase.app('biothenticator');
     FirebaseFirestore biothenticatorFirestore =
@@ -44,6 +44,37 @@ class AuthenticationInfo extends ChangeNotifier {
       "timestamp": FieldValue.serverTimestamp()
     });
     return doc.id;
+  }
+
+  // Update and log double authentication attempt
+  Future<void> logAttempt(
+      String userId, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) async {
+    // Firebase app dedicated to Biothenticator
+    FirebaseApp biothenticator = Firebase.app('biothenticator');
+    FirebaseFirestore biothenticatorFirestore =
+        FirebaseFirestore.instanceFor(app: biothenticator);
+
+    // Add the attempt to the logs
+    biothenticatorFirestore
+        .collection('2fa-status')
+        .doc(userId)
+        .collection('logs')
+        .doc(snapshot.data!.docs[0].id)
+        .set({
+      'isAuthenticated': true,
+      'timestamp': FieldValue.serverTimestamp()
+    });
+
+    // Remove the attempt from the list of those that
+    // are actively seeking for authentication
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      biothenticatorFirestore
+          .collection('2fa-status')
+          .doc(userId)
+          .collection('attempts')
+          .doc(snapshot.data!.docs[0].id)
+          .delete();
+    });
   }
 
   // Mapping Firebase User model to that of local user model

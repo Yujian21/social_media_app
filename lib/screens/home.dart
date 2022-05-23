@@ -72,14 +72,5 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-
-    //               await biothenticatorFirestore
-    //                   .collection('test')
-    //                   .add({"timestamp": FieldValue.serverTimestamp()});
-
-    //               // FirebaseFirestore.instance
-    //               //     .collection('2fa-status')
-    //               //     .add({"timestamp": FieldValue.serverTimestamp()});
-    //               // context.read<AuthenticationInfo>().firebaseSignOut();
   }
 }

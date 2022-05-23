@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/services/authentication_info.dart';
 
@@ -14,15 +15,15 @@ class TwoFactorAuthenticationPage extends StatefulWidget {
 
 class _TwoFactorAuthenticationPageState
     extends State<TwoFactorAuthenticationPage> {
-  String? docId;
+  String? authDocID;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) async {
-      docId = await Provider.of<AuthenticationInfo>(context, listen: false)
-          .logAttempt();
+      authDocID = await Provider.of<AuthenticationInfo>(context, listen: false)
+          .addAttempt();
       setState(() {
-        docId;
+        authDocID;
       });
     });
   }
@@ -36,23 +37,23 @@ class _TwoFactorAuthenticationPageState
     FirebaseFirestore biothenticatorFirestore =
         FirebaseFirestore.instanceFor(app: biothenticator);
 
-    if (docId == null) {
-      return const Scaffold(
-        body: CircularProgressIndicator(),
+    if (authDocID == null) {
+      return Scaffold(
+        body: Center(
+            child: Column(
+          children: const [
+            CircularProgressIndicator(),
+          ],
+        )),
       );
     } else {
-      debugPrint(docId);
-      debugPrint(user.userId);
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('2FA'),
-        ),
         body: StreamBuilder<QuerySnapshot>(
           stream: biothenticatorFirestore
               .collection('2fa-status')
               .doc(user.userId)
               .collection('attempts')
-              .where(FieldPath.documentId, isEqualTo: docId.toString())
+              .where(FieldPath.documentId, isEqualTo: authDocID.toString())
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
@@ -60,12 +61,19 @@ class _TwoFactorAuthenticationPageState
             }
 
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Text("Loading");
+              return Center(
+                child: Column(
+                  children: const [
+                    CircularProgressIndicator(),
+                    Text("Loading"),
+                  ],
+                ),
+              );
             }
             if (snapshot.hasData) {
               var documents = snapshot.data!.docs;
 
-              if (documents != []) {
+              if (documents.isNotEmpty) {
                 debugPrint(documents.toString());
                 debugPrint(documents[0]['isAuthenticated'].toString());
 
@@ -77,32 +85,31 @@ class _TwoFactorAuthenticationPageState
                         .read<AuthenticationInfo>()
                         .isDoubleAuthenticated(context);
 
-                    // Add the sign in attempt to the logs
-                    biothenticatorFirestore
-                        .collection('2fa-status')
-                        .doc(user.userId)
-                        .collection('logs')
-                        .doc(snapshot.data!.docs[0].id)
-                        .set({
-                      'isAuthenticated': true,
-                      'timestamp': FieldValue.serverTimestamp()
-                    });
-
-                    // Remove the sign in attempt from the list of attempts that
-                    // are actively seeking for authentication
-                    Future.delayed(const Duration(seconds: 2), () {
-                      biothenticatorFirestore
-                          .collection('2fa-status')
-                          .doc(user.userId)
-                          .collection('attempts')
-                          .doc(snapshot.data!.docs[0].id)
-                          .delete();
-                    });
+                    // Update and log the attempt on Biothenticator's Firestore
+                    context
+                        .read<AuthenticationInfo>()
+                        .logAttempt(user.userId, snapshot);
                   });
                 } else {
                   debugPrint('Is not double authenticated');
                 }
-                return const Text('Please authenticate via Biothenticator');
+                return Center(
+                    child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Please authenticate via Biothenticator',
+                      style: Theme.of(context).textTheme.headline2,
+                    ),
+                    const Icon(
+                      Icons.screen_lock_portrait_rounded,
+                      color: Colors.white,
+                    )
+                  ],
+                ));
+              } else {
+                Provider.of<AuthenticationInfo>(context, listen: false)
+                    .firebaseSignOut();
               }
             }
             return const Text('Something went wrong...  ;(');
@@ -112,3 +119,25 @@ class _TwoFactorAuthenticationPageState
     }
   }
 }
+
+                    // // Add the attempt to the logs
+                    // biothenticatorFirestore
+                    //     .collection('2fa-status')
+                    //     .doc(user.userId)
+                    //     .collection('logs')
+                    //     .doc(snapshot.data!.docs[0].id)
+                    //     .set({
+                    //   'isAuthenticated': true,
+                    //   'timestamp': FieldValue.serverTimestamp()
+                    // });
+
+                    // // Remove the attempt from the list of those that
+                    // // are actively seeking for authentication
+                    // Future.delayed(const Duration(milliseconds: 1000), () {
+                    //   biothenticatorFirestore
+                    //       .collection('2fa-status')
+                    //       .doc(user.userId)
+                    //       .collection('attempts')
+                    //       .doc(snapshot.data!.docs[0].id)
+                    //       .delete();
+                    // });

@@ -160,9 +160,7 @@ class MyApp extends StatelessWidget {
             }
           }
 
-          if (!doubleAuthenticationActivated) {
-            debugPrint('Double authentication not activated');
-          }
+        
 
           // If the current user is still on the sign in page or the sign up
           // page , have them redirected to the home page
