@@ -129,7 +129,7 @@ class UserInfo {
         .where('name', isEqualTo: name)
         .get()
         .then((value) {
-      debugPrint(value.docs.first.id);
+      debugPrint(value.docs.first.id + ' in getUID (user_info) method');
       return value.docs.first.id;
     });
     return uid;
@@ -150,17 +150,46 @@ class UserInfo {
     });
   }
 
-// Testing
-  // Get current user's following status on viewed user
-  // Stream<bool> isFollowing(uid, otherUid) {
-  //   return FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(uid)
-  //       .collection("following")
-  //       .doc(otherUid)
-  //       .snapshots()
-  //       .map((snapshot) {
-  //     return snapshot.exists;
-  //   });
-  // }
+  // Get searched user's profile information callback
+  Stream<UserModel?> getSearchedUserInfo(name) async* {
+    yield* FirebaseFirestore.instance
+        .collection("users")
+        .doc(await getUid(name))
+        .snapshots()
+        .map(userFromFirebaseSnapshot);
+  }
+
+  // Follow user (test) callback
+  Future<void> followSearchedUser(name) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('following')
+        .doc(await getUid(name))
+        .set({});
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(await getUid(name))
+        .collection('followers')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({});
+  }
+
+  // Unfollow user (test) callback
+  Future<void> unfollowSearchedUser(name) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('following')
+        .doc(await getUid(name))
+        .delete();
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(await getUid(name))
+        .collection('followers')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .delete();
+  }
 }

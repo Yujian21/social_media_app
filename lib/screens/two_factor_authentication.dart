@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:social_media_app/services/authentication_info.dart';
+import 'package:social_media_app/theme/style.dart';
 
 class TwoFactorAuthenticationPage extends StatefulWidget {
   const TwoFactorAuthenticationPage({Key? key}) : super(key: key);
@@ -41,8 +42,9 @@ class _TwoFactorAuthenticationPageState
       return Scaffold(
         body: Center(
             child: Column(
-          children: const [
-            CircularProgressIndicator(),
+          children: [
+            CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(appThemeTertiary)),
           ],
         )),
       );
@@ -63,9 +65,11 @@ class _TwoFactorAuthenticationPageState
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
                 child: Column(
-                  children: const [
-                    CircularProgressIndicator(),
-                    Text("Loading"),
+                  children: [
+                    CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(appThemeTertiary)),
+                    const Text("Loading"),
                   ],
                 ),
               );

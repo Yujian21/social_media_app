@@ -5,6 +5,7 @@ import 'package:social_media_app/screens/edit_profile.dart';
 import 'package:social_media_app/screens/home.dart';
 import 'package:social_media_app/screens/profile.dart';
 import 'package:social_media_app/screens/search.dart';
+import 'package:social_media_app/screens/search_profile.dart';
 import 'package:social_media_app/screens/settings.dart';
 import 'package:social_media_app/screens/sign_in.dart';
 import 'package:social_media_app/screens/sign_up.dart';
@@ -12,11 +13,13 @@ import 'package:social_media_app/screens/two_factor_authentication.dart';
 import 'package:social_media_app/screens/unknown.dart';
 import 'package:social_media_app/screens/visit.dart';
 import 'package:social_media_app/services/authentication_info.dart';
+import 'package:social_media_app/services/user_info.dart';
 import 'theme/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 
 final authenticationInfo = AuthenticationInfo();
+final userInfo = UserInfo();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -99,15 +102,24 @@ class MyApp extends StatelessWidget {
                 const EditProfilePage(),
           ),
           GoRoute(
-            path: '/search',
-            builder: (BuildContext context, GoRouterState state) =>
-                const SearchPage(),
-          ),
-          GoRoute(
-            path: '/visit-profile',
-            builder: (BuildContext context, GoRouterState state) =>
-                 VisitPage(user: state.extra! as UserModel),
-          ),
+              path: '/search',
+              builder: (BuildContext context, GoRouterState state) =>
+                  const SearchPage(),
+              routes: [
+                GoRoute(
+                  name: 'search-profile',
+                  path: ':name',
+                  builder: (BuildContext context, GoRouterState state) {
+                    final name = state.params['name'];
+                    return SearchProfilePage(name: name);
+                  },
+                )
+              ]),
+          // GoRoute(
+          //   path: '/visit-profile',
+          //   builder: (BuildContext context, GoRouterState state) =>
+          //       VisitPage(user: state.extra! as UserModel),
+          // ),
         ],
         redirect: (state) {
           // The declaration of authentication state variables,
@@ -159,8 +171,6 @@ class MyApp extends StatelessWidget {
               return '/';
             }
           }
-
-        
 
           // If the current user is still on the sign in page or the sign up
           // page , have them redirected to the home page

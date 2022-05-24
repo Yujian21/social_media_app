@@ -27,10 +27,6 @@ class _SearchPageState extends State<SearchPage> {
             value: userInfo.queryByName(search),
             initialData: const [],
           ),
-          // StreamProvider<bool>.value(
-          //     value: userInfo.isFollowing(
-          //         FirebaseAuth.instance.currentUser!.uid, uid),
-          //     initialData: false)
         ],
         child: Builder(builder: (BuildContext context) {
           BuildContext rootContext = context;
@@ -89,8 +85,12 @@ class _SearchPageState extends State<SearchPage> {
                                       return Material(
                                         child: InkWell(
                                           onTap: () {
-                                            context.go('/visit-profile',
-                                                extra: user);
+                                            // context.go('/visit-profile',
+                                            //     extra: user);
+                                            context.goNamed('search-profile',
+                                                params: {
+                                                  'name': user.name.toString()
+                                                });
                                             // debugPrint(
                                             //     users[index]!.id.toString());
                                             // debugPrint(
@@ -115,8 +115,11 @@ class _SearchPageState extends State<SearchPage> {
                                                                 .profileImageUrl
                                                                 .toString()),
                                                       )
-                                                    : const Icon(Icons.person,
-                                                        size: 40),
+                                                    : const Icon(
+                                                        Icons.person_rounded,
+                                                        size: 35,
+                                                        color: Colors.white,
+                                                      ),
                                                 const SizedBox(width: 10),
                                                 Text(user.name.toString()),
                                               ]),
