@@ -17,8 +17,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   user_info.UserInfo userInfo = user_info.UserInfo();
   String search = '';
-  // String uid = 'null';
-  // Map<String, dynamic> uidIsFollowing = {};
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -74,34 +73,16 @@ class _SearchPageState extends State<SearchPage> {
                                   itemCount: users.length,
                                   itemBuilder: (context, index) {
                                     final user = users[index];
-                                    // uidIsFollowing['$index'] = user!.id;
-                                    // debugPrint(
-                                    //     uidIsFollowing['$index'].toString());
-                                    // uid = uidIsFollowing['$index'];
-                                    // debugPrint('local uid is: ' + uid);
                                     if (FirebaseAuth
                                             .instance.currentUser!.uid !=
                                         user!.id) {
                                       return Material(
                                         child: InkWell(
                                           onTap: () {
-                                            // context.go('/visit-profile',
-                                            //     extra: user);
                                             context.goNamed('search-profile',
                                                 params: {
                                                   'name': user.name.toString()
                                                 });
-                                            // debugPrint(
-                                            //     users[index]!.id.toString());
-                                            // debugPrint(
-                                            //     users[index]!.name.toString());
-                                            // debugPrint(
-                                            //     users[index]!.email.toString());
-                                            // debugPrint(users[index]!
-                                            //     .profileImageUrl
-                                            //     .toString());
-                                            // uid = users[index]!.id.toString();
-                                            // debugPrint('local var is: ' + uid);
                                           },
                                           child: Column(children: [
                                             Padding(

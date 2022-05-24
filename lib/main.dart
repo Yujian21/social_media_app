@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/models/user.dart';
 import 'package:social_media_app/screens/edit_profile.dart';
 import 'package:social_media_app/screens/home.dart';
 import 'package:social_media_app/screens/profile.dart';
@@ -11,7 +10,6 @@ import 'package:social_media_app/screens/sign_in.dart';
 import 'package:social_media_app/screens/sign_up.dart';
 import 'package:social_media_app/screens/two_factor_authentication.dart';
 import 'package:social_media_app/screens/unknown.dart';
-import 'package:social_media_app/screens/visit.dart';
 import 'package:social_media_app/services/authentication_info.dart';
 import 'package:social_media_app/services/user_info.dart';
 import 'theme/theme.dart';
@@ -115,11 +113,6 @@ class MyApp extends StatelessWidget {
                   },
                 )
               ]),
-          // GoRoute(
-          //   path: '/visit-profile',
-          //   builder: (BuildContext context, GoRouterState state) =>
-          //       VisitPage(user: state.extra! as UserModel),
-          // ),
         ],
         redirect: (state) {
           // The declaration of authentication state variables,

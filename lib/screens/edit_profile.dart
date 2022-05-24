@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../services/user_info.dart' as user_info;
 import '../components/side_menu.dart';
 import '../theme/style.dart';
@@ -14,8 +15,8 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   PlatformFile? uploadFile;
+  TextEditingController nameController = TextEditingController();
   String name = '';
-  String email = '';
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +25,27 @@ class _EditProfilePageState extends State<EditProfilePage> {
     // The following functions are used to generate the widget components for the edit profile page
     //
     // ----------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Alert dialog
+    Future<dynamic> _generateAlertDialog(
+        BuildContext context, String title, String content) {
+      return showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+                backgroundColor: appThemeSecondary,
+                title: Text(
+                  title,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                content: Text(content),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ));
+    }
 
     // Sized boxes (White spaces)
     Widget _generateSizedBox() {
@@ -96,23 +118,31 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           children: [
                             _generateSizedBox(),
                             TextFormField(
+                                controller: nameController,
                                 decoration:
                                     const InputDecoration(hintText: 'Name'),
                                 onChanged: ((value) {
                                   name = value;
                                 })),
                             _generateSizedBox(),
-                            TextFormField(
-                                decoration:
-                                    const InputDecoration(hintText: 'Email'),
-                                onChanged: ((value) {
-                                  email = value;
-                                })),
                             _generateSizedBox(),
                             ElevatedButton(
-                                onPressed: () {
-                                  user_info.UserInfo()
-                                      .updateProfile(uploadFile, name, email);
+                                onPressed: () async {
+                                  final updateSuccess =
+                                      await user_info.UserInfo()
+                                          .updateProfile(uploadFile, name);
+
+                                  if (updateSuccess == false) {
+                                    _generateAlertDialog(context, 'Not updated',
+                                        'The name that was provided has already been taken!');
+                                  } else {
+                                    _generateAlertDialog(context, 'Updated',
+                                        'Your profile has been successfully updated!');
+                                    setState(() {
+                                      uploadFile = null;
+                                      nameController.clear();
+                                    });
+                                  }
                                 },
                                 child: const Text('Update profile'))
                           ],

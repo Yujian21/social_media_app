@@ -17,7 +17,6 @@ class SearchProfilePage extends StatefulWidget {
 
 class _SearchProfilePageState extends State<SearchProfilePage> {
   user_info.UserInfo userInfo = user_info.UserInfo();
-  PlatformFile? uploadFile;
   String? searchedUID;
   String? searchedName;
 

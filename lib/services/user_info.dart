@@ -37,22 +37,26 @@ class UserInfo {
   }
 
   // Update profile callback
-  Future<void> updateProfile(
-      PlatformFile? uploadFile, String name, String email) async {
+  Future<bool?> updateProfile(PlatformFile? uploadFile, String name) async {
     String profileImageUrl = '';
+    bool nameExists = false;
 
     if (uploadFile != null) {
       profileImageUrl = await utilities.uploadFile(uploadFile,
           'uploads/${FirebaseAuth.instance.currentUser!.uid}/profile/profile_picture');
     }
 
+    if (name != '') {
+      nameExists = await utilities.doesNameAlreadyExist(name);
+      if (nameExists) {
+        return false;
+      }
+    }
+
     Map<String, dynamic> payloadData = HashMap();
 
     if (name != '') {
       payloadData['name'] = name;
-    }
-    if (email != '') {
-      payloadData['email'] = email;
     }
     if (profileImageUrl != '') {
       payloadData['profileImageUrl'] = profileImageUrl;
@@ -62,6 +66,8 @@ class UserInfo {
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .update(payloadData);
+
+    return true;
   }
 
   // Search other users by name callback
@@ -150,7 +156,9 @@ class UserInfo {
     });
   }
 
-  // Get searched user's profile information callback
+  // TEST
+
+  // Get searched user's profile information (test) callback
   Stream<UserModel?> getSearchedUserInfo(name) async* {
     yield* FirebaseFirestore.instance
         .collection("users")
