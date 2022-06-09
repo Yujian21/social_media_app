@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/services/authentication_info.dart';
-import 'package:social_media_app/theme/style.dart';
+import '../services/authentication_info.dart';
+import '../theme/style.dart';
+import '../components/pin_field.dart';
 
 class TwoFactorAuthenticationPage extends StatefulWidget {
   const TwoFactorAuthenticationPage({Key? key}) : super(key: key);
@@ -16,7 +17,17 @@ class TwoFactorAuthenticationPage extends StatefulWidget {
 
 class _TwoFactorAuthenticationPageState
     extends State<TwoFactorAuthenticationPage> {
+  // Initialize variable to store 2FA attempt document ID
   String? authDocID;
+
+  // Initialize controllers to accept fallback PIN
+  final TextEditingController _fieldOne = TextEditingController();
+  final TextEditingController _fieldTwo = TextEditingController();
+  final TextEditingController _fieldThree = TextEditingController();
+  final TextEditingController _fieldFour = TextEditingController();
+  final TextEditingController _fieldFive = TextEditingController();
+  final TextEditingController _fieldSix = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -53,7 +64,7 @@ class _TwoFactorAuthenticationPageState
         body: StreamBuilder<QuerySnapshot>(
           stream: biothenticatorFirestore
               .collection('2fa-status')
-              .doc(user.userId)
+              .doc(FirebaseAuth.instance.currentUser!.uid)
               .collection('attempts')
               .where(FieldPath.documentId, isEqualTo: authDocID.toString())
               .snapshots(),
@@ -97,20 +108,91 @@ class _TwoFactorAuthenticationPageState
                 } else {
                   debugPrint('Is not double authenticated');
                 }
-                return Center(
-                    child: Row(
+                return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      'Please authenticate via Biothenticator',
-                      style: Theme.of(context).textTheme.headline2,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Please authenticate via Biothenticator',
+                          style: Theme.of(context).textTheme.headline2,
+                        ),
+                        const Icon(
+                          Icons.screen_lock_portrait_rounded,
+                          color: Colors.white,
+                        ),
+                      ],
                     ),
-                    const Icon(
-                      Icons.screen_lock_portrait_rounded,
-                      color: Colors.white,
-                    )
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        PinInput(_fieldOne, true),
+                        PinInput(_fieldTwo, false),
+                        PinInput(_fieldThree, false),
+                        PinInput(_fieldFour, false),
+                        PinInput(_fieldFive, false),
+                        PinInput(_fieldSix, false)
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ElevatedButton(
+                        onPressed: () async {
+                          var pin = _fieldOne.text +
+                              _fieldTwo.text +
+                              _fieldThree.text +
+                              _fieldFour.text +
+                              _fieldFive.text +
+                              _fieldSix.text;
+                          if (pin.length == 6) {
+                            await biothenticatorFirestore
+                                .collection('2fa-status')
+                                .doc(FirebaseAuth.instance.currentUser!.uid)
+                                .get()
+                                .then((documentSnapshot) {
+                              if (documentSnapshot['fallbackPin'] == pin) {
+                                final docRef = FirebaseFirestore.instance
+                                    .collection('2fa-status')
+                                    .doc(FirebaseAuth.instance.currentUser!.uid)
+                                    .collection('attempts')
+                                    .doc(authDocID);
+
+                                FirebaseFirestore.instance
+                                    .runTransaction((transaction) async {
+                                  transaction.update(
+                                      docRef, {'isAuthenticated': true});
+                                }).then(
+                                  (_) {},
+                                  onError: (e) =>
+                                      debugPrint("Error updating document $e"),
+                                );
+
+                                // Update local double authentication state
+                                context
+                                    .read<AuthenticationInfo>()
+                                    .isDoubleAuthenticated(context);
+
+                                // Update and log the attempt on Biothenticator's Firestore
+                                context
+                                    .read<AuthenticationInfo>()
+                                    .logAttempt(user.userId, snapshot);
+                              } else {
+                                debugPrint('incorrect pin');
+                              }
+                            });
+                          } else {
+                            debugPrint('invalid pin');
+                          }
+                        },
+                        child: const Text('Authenticate')),
                   ],
-                ));
+                );
               } else {
                 Provider.of<AuthenticationInfo>(context, listen: false)
                     .firebaseSignOut();
@@ -123,25 +205,3 @@ class _TwoFactorAuthenticationPageState
     }
   }
 }
-
-                    // // Add the attempt to the logs
-                    // biothenticatorFirestore
-                    //     .collection('2fa-status')
-                    //     .doc(user.userId)
-                    //     .collection('logs')
-                    //     .doc(snapshot.data!.docs[0].id)
-                    //     .set({
-                    //   'isAuthenticated': true,
-                    //   'timestamp': FieldValue.serverTimestamp()
-                    // });
-
-                    // // Remove the attempt from the list of those that
-                    // // are actively seeking for authentication
-                    // Future.delayed(const Duration(milliseconds: 1000), () {
-                    //   biothenticatorFirestore
-                    //       .collection('2fa-status')
-                    //       .doc(user.userId)
-                    //       .collection('attempts')
-                    //       .doc(snapshot.data!.docs[0].id)
-                    //       .delete();
-                    // });

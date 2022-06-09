@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:social_media_app/components/email_field.dart';
 import 'package:social_media_app/components/glass_morphism.dart';
 import 'package:social_media_app/components/password_field.dart';
-// import 'package:social_media_app/models/user.dart';
 import 'package:social_media_app/services/authentication_info.dart';
 import 'package:social_media_app/theme/style.dart';
 

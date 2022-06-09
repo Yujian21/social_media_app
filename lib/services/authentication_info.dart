@@ -41,6 +41,8 @@ class AuthenticationInfo extends ChangeNotifier {
         .collection('attempts')
         .add({
       "isAuthenticated": false,
+      "email": FirebaseAuth.instance.currentUser!.email,
+      "platform": 'fake social media',
       "timestamp": FieldValue.serverTimestamp()
     });
     return doc.id;
@@ -62,6 +64,8 @@ class AuthenticationInfo extends ChangeNotifier {
         .doc(snapshot.data!.docs[0].id)
         .set({
       'isAuthenticated': true,
+      "email": FirebaseAuth.instance.currentUser!.email,
+      "platform": 'fake social media',
       'timestamp': FieldValue.serverTimestamp()
     });
 
@@ -90,10 +94,6 @@ class AuthenticationInfo extends ChangeNotifier {
     }
     debugPrint('User is null.');
     return null;
-  }
-
-  Stream<UserModel?> get user {
-    return auth.authStateChanges().map(createUserFromFirebaseUser);
   }
 
   // Firebase email & password authentication callback
