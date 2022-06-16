@@ -1,7 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:social_media_app/components/side_menu.dart';
-import 'package:social_media_app/services/authentication_info.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -14,7 +13,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<AuthenticationInfo>(context);
+
     return Scaffold(
         drawer: const SideMenu(),
         body: SafeArea(
@@ -28,19 +27,15 @@ class _SettingsPageState extends State<SettingsPage> {
               Expanded(
                 flex: 5,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Center(
-                      child: Text(
-                        user.id.toString(),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
                     Container(
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16)),
                       child: QrImage(
-                        data: user.userId,
+                        data: FirebaseAuth.instance.currentUser!.uid,
                         size: 200,
                       ),
                     ),

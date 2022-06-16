@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../services/user_info.dart' as user_info;
 import '../components/side_menu.dart';
 import '../theme/style.dart';

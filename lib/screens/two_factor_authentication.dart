@@ -42,8 +42,6 @@ class _TwoFactorAuthenticationPageState
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<AuthenticationInfo>(context, listen: false);
-
     // Firebase app dedicated to Biothenticator
     FirebaseApp biothenticator = Firebase.app('biothenticator');
     FirebaseFirestore biothenticatorFirestore =
@@ -101,9 +99,8 @@ class _TwoFactorAuthenticationPageState
                         .isDoubleAuthenticated(context);
 
                     // Update and log the attempt on Biothenticator's Firestore
-                    context
-                        .read<AuthenticationInfo>()
-                        .logAttempt(user.userId, snapshot);
+                    context.read<AuthenticationInfo>().logAttempt(
+                        FirebaseAuth.instance.currentUser!.uid, snapshot);
                   });
                 } else {
                   debugPrint('Is not double authenticated');
@@ -179,9 +176,9 @@ class _TwoFactorAuthenticationPageState
                                     .isDoubleAuthenticated(context);
 
                                 // Update and log the attempt on Biothenticator's Firestore
-                                context
-                                    .read<AuthenticationInfo>()
-                                    .logAttempt(user.userId, snapshot);
+                                context.read<AuthenticationInfo>().logAttempt(
+                                    FirebaseAuth.instance.currentUser!.uid,
+                                    snapshot);
                               } else {
                                 debugPrint('incorrect pin');
                               }
