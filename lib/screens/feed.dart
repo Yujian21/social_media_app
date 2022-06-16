@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:social_media_app/services/user_info.dart';
-import 'package:social_media_app/theme/style.dart';
+import '../services/user_info.dart';
+import '../theme/style.dart';
 import '../models/post.dart';
 import '../models/user.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/theme/style.dart';
+import '../theme/style.dart';
 
 class AppTheme {
   static final ThemeData custom = ThemeData(

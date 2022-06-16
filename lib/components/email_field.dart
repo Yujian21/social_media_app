@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/theme/style.dart';
+import '../theme/style.dart';
 
 // ignore: must_be_immutable
 class EmailField extends StatefulWidget {
