@@ -6,6 +6,7 @@ import '../models/post.dart';
 import '../services/user_info.dart' as user_info;
 
 class PostInfo {
+  // Save the post created by the user
   Future savePost(String? content) async {
     await FirebaseFirestore.instance.collection("posts").add({
       'content': content,
@@ -14,6 +15,8 @@ class PostInfo {
     });
   }
 
+  // Parse the post from the Firebase snapshot into 
+  // the local post model
   PostModel? postFromSnapshot(DocumentSnapshot snapshot) {
     return snapshot.exists
         ? PostModel(
@@ -26,6 +29,8 @@ class PostInfo {
         : null;
   }
 
+  // Parse the list of posts from the Firebase snapshot into 
+  // a list of the local post model
   List<PostModel> postListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
       return PostModel(
@@ -38,14 +43,17 @@ class PostInfo {
     }).toList();
   }
 
+  // Get the feed for the current user
   Future<List<PostModel>> getFeed() async {
+    // Get the list of users that the current user is actively following
     List<String> usersFollowing = await user_info.UserInfo()
         .getUserFollowing(FirebaseAuth.instance.currentUser!.uid);
-
     var splitUsersFollowing = partition<dynamic>(usersFollowing, 10);
     inspect(splitUsersFollowing);
     List<PostModel> feedList = [];
 
+    // For each user that the current user is actively following, 
+    // obtain all of his/her posts, parse the posts, and add it to the feed
     for (int i = 0; i < splitUsersFollowing.length; i++) {
       inspect(splitUsersFollowing.elementAt(i));
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -57,6 +65,7 @@ class PostInfo {
       feedList.addAll(postListFromSnapshot(querySnapshot));
     }
 
+    // Sort the feed by the timestamps of the posts 
     feedList.sort((a, b) {
       var adate = a.timestamp;
       var bdate = b.timestamp;

@@ -58,6 +58,8 @@ class MyApp extends StatelessWidget {
     late final GoRouter goRouter = GoRouter(
         refreshListenable: authenticationInfo,
         debugLogDiagnostics: true,
+        // Declaration of routes that will be used throughout the web app
+        // (Works for URL)
         routes: <GoRoute>[
           GoRoute(
             path: '/',
@@ -122,10 +124,6 @@ class MyApp extends StatelessWidget {
           final doubleAuthenticated = authenticationInfo.doubleAuthenticatedAlt;
           final doubleAuthenticationActivated =
               authenticationInfo.doubleAuthenticationActivatedAlt;
-
-          // Debugging statement
-          debugPrint('Boolean for logged in status in redirect: ' +
-              signedIn.toString());
 
           // The declaration of paths in which the user is or may be
           // headed towards

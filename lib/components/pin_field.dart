@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// The widget for the PIN field, found in the 2FA page
 class PinInput extends StatelessWidget {
   final TextEditingController controller;
   final bool autoFocus;

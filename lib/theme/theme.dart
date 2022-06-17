@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/style.dart';
 
+// Overall theme for the app
+// (e.g., text font family, text colour, primary colour, etc.)
 class AppTheme {
   static final ThemeData custom = ThemeData(
       textSelectionTheme: const TextSelectionThemeData(

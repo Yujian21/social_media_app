@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
 import '../theme/style.dart';
 
+// The widget for the password field
 // ignore: must_be_immutable
 class PasswordField extends StatefulWidget {
   ValueChanged<String> onChanged;

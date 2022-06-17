@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+// The widget for the glass morphism icon placeholder (purely for visual purposes)
 class GlassMorphism extends StatelessWidget {
   final double blur;
   final double opacity;

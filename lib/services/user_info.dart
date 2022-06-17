@@ -7,9 +7,11 @@ import '../models/user.dart';
 import '../services/utils.dart';
 
 class UserInfo {
+  // Instantiate a utilities class (For profile updates 
+  // (e.g., upload profile image, check if name/username already exists))
   Utilities utilities = Utilities();
 
-  // Create local user model from Firebase snapshot
+  // Parse a user from a Firebase snapshot to a local user model
   UserModel? userFromFirebaseSnapshot(DocumentSnapshot? snapshot) {
     if (snapshot != null) {
       return UserModel(
@@ -50,11 +52,15 @@ class UserInfo {
     String profileImageUrl = '';
     bool nameExists = false;
 
+    // If the profile image is not null, initiate the upload task, 
+    // with a specified path
     if (uploadFile != null) {
       profileImageUrl = await utilities.uploadFile(uploadFile,
           'uploads/${FirebaseAuth.instance.currentUser!.uid}/profile/profile_picture');
     }
 
+    // If the name/username is not empty, check if it already exists 
+    // in Firestore, and return the boolean
     if (name != '') {
       nameExists = await utilities.doesNameAlreadyExist(name);
       if (nameExists) {
@@ -62,6 +68,9 @@ class UserInfo {
       }
     }
 
+    // Depending on the information the user has chosen to update
+    // (e.g., name/username and/or profile image), 
+    // add the non-empty information to the payload (Map) to upload to Firestore
     Map<String, dynamic> payloadData = HashMap();
 
     if (name != '') {
@@ -79,7 +88,7 @@ class UserInfo {
     return true;
   }
 
-  // Search other users by username
+  // Search other users by their username
   Stream<List<UserModel?>> queryByName(search) {
     return FirebaseFirestore.instance
         .collection("users")
@@ -91,7 +100,8 @@ class UserInfo {
         .map(_userListFromQuerySnapshot);
   }
 
-  // Create a list of users from Firebase snapshot
+  // Parse a list of users from a Firebase snapshot into a list of 
+  // local user models
   List<UserModel?> _userListFromQuerySnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
       return UserModel(
@@ -103,23 +113,20 @@ class UserInfo {
     }).toList();
   }
 
-  // Get the UID of a searched user by username
+  // Get the UID of a searched user by their username
   Future<String?> getUid(String name) async {
     String uid = await FirebaseFirestore.instance
         .collection('users')
         .where('name', isEqualTo: name)
         .get()
         .then((value) {
-      debugPrint(value.docs.first.id + ' in getUID (user_info) method');
       return value.docs.first.id;
     });
     return uid;
   }
 
-  // Get current user's following status on searched user
+  // Get the current user's following status on the searched user
   Stream<bool?> isFollowing(uid, name) async* {
-    // String? otherUid = await getUid(name);
-    // debugPrint('is following alt: ' + otherUid.toString());
     yield* FirebaseFirestore.instance
         .collection("users")
         .doc(uid)
@@ -131,7 +138,7 @@ class UserInfo {
     });
   }
 
-  // Get the searched user's profile information by username
+  // Get the searched user's profile information by their username
   Stream<UserModel?> getSearchedUserInfo(name) async* {
     yield* FirebaseFirestore.instance
         .collection("users")
@@ -140,8 +147,10 @@ class UserInfo {
         .map(userFromFirebaseSnapshot);
   }
 
-  // Follow a user by username
+  // Follow a user by their username
   Future<void> followSearchedUser(name) async {
+    // Add the searched user as a document in the current user's 
+    // following subcollection
     await FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -149,6 +158,8 @@ class UserInfo {
         .doc(await getUid(name))
         .set({});
 
+    // Add the current user as a document in the searched user's
+    // followers subcollection
     await FirebaseFirestore.instance
         .collection('users')
         .doc(await getUid(name))
@@ -157,8 +168,10 @@ class UserInfo {
         .set({});
   }
 
-  // Unfollow a user by username
+  // Unfollow a user by their username
   Future<void> unfollowSearchedUser(name) async {
+    // Remove the searched user in the current user's 
+    // following subcollection
     await FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -166,6 +179,8 @@ class UserInfo {
         .doc(await getUid(name))
         .delete();
 
+    // Remove the current user in the searched user's     
+    // followers subcollection
     await FirebaseFirestore.instance
         .collection('users')
         .doc(await getUid(name))

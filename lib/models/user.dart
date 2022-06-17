@@ -1,3 +1,4 @@
+// The local class in which users from (a) Firebase snapshot(s) is parsed into
 class UserModel {
   String? id;
   String? name;

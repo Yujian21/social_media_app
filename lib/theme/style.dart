@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// Colour collection
+// Colour palette
 MaterialColor appThemePrimary = MaterialColor(0xFF232231, color);
 MaterialColor appThemeSecondary = MaterialColor(0xFF262535, color);
 MaterialColor appThemeTertiary = MaterialColor(0xFF7a42db, color);

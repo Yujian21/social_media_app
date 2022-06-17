@@ -8,33 +8,35 @@ class AuthenticationInfo extends ChangeNotifier {
   // Create a Firebase Authentication service instance
   FirebaseAuth auth = FirebaseAuth.instance;
 
-// Using the user ID as a means to keep track of sign in status
+  // Use the user ID as a means to keep track of sign in status
   var userId = '';
   String get id => userId;
   bool get signedIn => userId.isNotEmpty;
 
-// Verify that 2FA is enabled for the current user
+  // Verify that 2FA is enabled for the current user
   bool doubleAuthenticationActivated = false;
   bool get doubleAuthenticationActivatedAlt => doubleAuthenticationActivated;
 
-// Verify that the current user is double authenticated
+  // Verify that the current user is double authenticated
   bool doubleAuthenticated = false;
   bool get doubleAuthenticatedAlt => doubleAuthenticated;
 
-// Toggle the current user's 2FA status
+  // Toggle the current user's 2FA status
   void isDoubleAuthenticated(BuildContext context) {
     doubleAuthenticated = true;
     debugPrint('Is double authenticated.');
     notifyListeners();
   }
 
-// Add double authentication attempt callback
+  // Add double authentication attempt to Firestore dedicated to Biothenticator
   Future<String> addAttempt() async {
-    // Firebase app dedicated to Biothenticator
+    // Declare the Firestore dedicated to Biothenticator
     FirebaseApp biothenticator = Firebase.app('biothenticator');
     FirebaseFirestore biothenticatorFirestore =
         FirebaseFirestore.instanceFor(app: biothenticator);
 
+    // Create the 2FA attempt under the current user, with
+    // additional information such as the email, the platform, and the timestamp
     DocumentReference doc = await biothenticatorFirestore
         .collection('2fa-status')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -48,15 +50,15 @@ class AuthenticationInfo extends ChangeNotifier {
     return doc.id;
   }
 
-  // Update and log double authentication attempt
+  // Update and log the 2FA attempt
   Future<void> logAttempt(
       String userId, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) async {
-    // Firebase app dedicated to Biothenticator
+    // Declare the Firestore dedicated to Biothenticator
     FirebaseApp biothenticator = Firebase.app('biothenticator');
     FirebaseFirestore biothenticatorFirestore =
         FirebaseFirestore.instanceFor(app: biothenticator);
 
-    // Add the attempt to the logs
+    // Add the 2FA attempt to the logs
     biothenticatorFirestore
         .collection('2fa-status')
         .doc(userId)
@@ -69,8 +71,8 @@ class AuthenticationInfo extends ChangeNotifier {
       'timestamp': FieldValue.serverTimestamp()
     });
 
-    // Remove the attempt from the list of those that
-    // are actively seeking for authentication
+    // Remove the 2FA attempt from the list of attempts that
+    // are still actively seeking for authentication
     Future.delayed(const Duration(milliseconds: 1000), () {
       biothenticatorFirestore
           .collection('2fa-status')
@@ -81,7 +83,8 @@ class AuthenticationInfo extends ChangeNotifier {
     });
   }
 
-  // Mapping Firebase User model to that of local user model
+  // Parsing the Firebase User to that of the local user model, and assigning 
+  // the user ID, to update the sign in status
   UserModel? createUserFromFirebaseUser(User? user) {
     if (user != null) {
       debugPrint('User is not null.');
@@ -96,7 +99,7 @@ class AuthenticationInfo extends ChangeNotifier {
     return null;
   }
 
-  // Firebase email & password authentication callback
+  // Sign in via Firebase email & password authentication
   void firebaseSignIn(BuildContext context, String email, String password,
       Function userNotFound, Function incorrectPassword) async {
     try {
@@ -108,13 +111,10 @@ class AuthenticationInfo extends ChangeNotifier {
       FirebaseFirestore biothenticatorFirestore =
           FirebaseFirestore.instanceFor(app: biothenticator);
 
-      // Store the current user in memory for further use later on
-      final user = auth.currentUser;
-
       // Using the current user ID, verify if he/she has 2FA enabled
       await biothenticatorFirestore
           .collection('2fa-status')
-          .where(FieldPath.documentId, isEqualTo: user!.uid)
+          .where(FieldPath.documentId, isEqualTo: auth.currentUser!.uid)
           .get()
           .then((QuerySnapshot querySnapshot) {
         if (querySnapshot.docs.isNotEmpty) {
@@ -125,15 +125,17 @@ class AuthenticationInfo extends ChangeNotifier {
         }
       });
 
-      createUserFromFirebaseUser(user);
+      createUserFromFirebaseUser(auth.currentUser);
       debugPrint('Sign in successful');
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
+        // If the user is not found
         case 'user-not-found':
           debugPrint('No user found for that email.');
           userNotFound();
           break;
+        // If the password provided is incorrect
         case 'wrong-password':
           debugPrint('Wrong password provided for that user.');
           incorrectPassword();
@@ -145,7 +147,7 @@ class AuthenticationInfo extends ChangeNotifier {
     }
   }
 
-  // Firebase email & password sign up callback
+  // Sign up via Firebase email & password authentication
   void firebaseSignUp(String email, String password, Function invalidEmail,
       Function weakPassword, Function emailInUse) async {
     try {
@@ -155,7 +157,7 @@ class AuthenticationInfo extends ChangeNotifier {
 
       // Store the current user in memory for further use later on
       final user = auth.currentUser;
-      createUserFromFirebaseUser(user);
+      createUserFromFirebaseUser(auth.currentUser);
 
       // Reset local double authentication status to false
       doubleAuthenticationActivated = false;
@@ -165,19 +167,22 @@ class AuthenticationInfo extends ChangeNotifier {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user!.uid)
-          .set({"name": email, "email": email, "profileImageUrl": ''});
+          .set({"name": email, "email": email, "profileImageUrl": ""});
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
+        // If the email provided is invalid
         case 'invalid-email':
           debugPrint('The email that has been provided is invalid.');
           invalidEmail();
           break;
+        // If the password provided is too weak
         case 'weak-password':
           debugPrint('The password provided is too weak.');
           debugPrint(e.message);
           weakPassword();
           break;
+        // If the email provided is already in use
         case 'email-already-in-use':
           debugPrint('An account already exists for that email.');
           emailInUse();
@@ -188,7 +193,7 @@ class AuthenticationInfo extends ChangeNotifier {
     }
   }
 
-// Firebase sign out callback
+  // Sign out via Firebase authentication
   void firebaseSignOut() async {
     try {
       await FirebaseAuth.instance.signOut();

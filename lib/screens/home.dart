@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../screens/feed.dart';
+import '../components/feed.dart';
 import '../services/post.dart';
 import '../models/post.dart';
 import '../components/side_menu.dart';

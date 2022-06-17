@@ -13,8 +13,11 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  // 
   PlatformFile? uploadFile;
   TextEditingController nameController = TextEditingController();
+
+  // 
   String name = '';
 
   @override

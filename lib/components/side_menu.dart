@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../services/authentication_info.dart';
 import '../theme/style.dart';
 
-// Side menu (drawer) of the app
+// The widget for the side menu (drawer), which can be found 
+// in all of the pages after login
 class SideMenu extends StatelessWidget {
   const SideMenu({
     Key? key,

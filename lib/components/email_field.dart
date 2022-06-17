@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import '../theme/style.dart';
 
-// ignore: must_be_immutable
+// The widget for the email field
 class EmailField extends StatefulWidget {
-  // TextEditingController controller;
-  ValueChanged<String> onChanged;
+  final ValueChanged<String> onChanged;
 
-  EmailField({
+  const EmailField({
     Key? key,
-    // required this.controller,
     required this.onChanged,
   }) : super(key: key);
 
@@ -22,7 +20,6 @@ class _EmailFieldState extends State<EmailField> {
     return Theme(
       child: TextFormField(
           onChanged: widget.onChanged,
-          // controller: widget.controller,
           decoration: const InputDecoration(
             hintText: 'E-mail',
           )),
