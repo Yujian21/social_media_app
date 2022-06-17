@@ -17,10 +17,10 @@ class TwoFactorAuthenticationPage extends StatefulWidget {
 
 class _TwoFactorAuthenticationPageState
     extends State<TwoFactorAuthenticationPage> {
-  // Initialize variable to store 2FA attempt document ID
+  // Initialize the variable for the 2FA attempt document ID
   String? authDocID;
 
-  // Initialize controllers to accept fallback PIN
+  // Initialize controllers for PIN fields
   final TextEditingController _fieldOne = TextEditingController();
   final TextEditingController _fieldTwo = TextEditingController();
   final TextEditingController _fieldThree = TextEditingController();
@@ -28,6 +28,8 @@ class _TwoFactorAuthenticationPageState
   final TextEditingController _fieldFive = TextEditingController();
   final TextEditingController _fieldSix = TextEditingController();
 
+  // When this page loads, initiate a 2FA attempt under the current user 
+  // (Creating a Firebase document)
   @override
   void initState() {
     super.initState();
@@ -42,11 +44,13 @@ class _TwoFactorAuthenticationPageState
 
   @override
   Widget build(BuildContext context) {
-    // Firebase app dedicated to Biothenticator
+    // Declare the Firestore dedicated to Biothenticator
     FirebaseApp biothenticator = Firebase.app('biothenticator');
     FirebaseFirestore biothenticatorFirestore =
         FirebaseFirestore.instanceFor(app: biothenticator);
 
+    // If the 2FA attempt (Firebase document) has not yet fully initialized,
+    // show a circular progress indicator
     if (authDocID == null) {
       return Scaffold(
         body: Center(
@@ -58,6 +62,10 @@ class _TwoFactorAuthenticationPageState
         )),
       );
     } else {
+    // If the 2FA attempt (Firebase document) has fully initialized,
+    // show the 2FA page. This page depends on a stream which listens to the 
+    // 2FA attempt (Firebase document) which was created when this page first 
+    // loaded
       return Scaffold(
         body: StreamBuilder<QuerySnapshot>(
           stream: biothenticatorFirestore
@@ -83,17 +91,19 @@ class _TwoFactorAuthenticationPageState
                 ),
               );
             }
+
             if (snapshot.hasData) {
               var documents = snapshot.data!.docs;
 
               if (documents.isNotEmpty) {
-                debugPrint(documents.toString());
-                debugPrint(documents[0]['isAuthenticated'].toString());
-
+                // If the authentication attribute on the 2FA attempt
+                // (Firebase document) has been set to true
                 if (documents[0]['isAuthenticated'] == true) {
                   debugPrint('Is double authenticated');
                   WidgetsBinding.instance!.addPostFrameCallback((_) {
-                    // Update local double authentication state
+                    // Update the local double authentication state
+                    // (Which would subsequently redirect the user to the 
+                    // home page)
                     context
                         .read<AuthenticationInfo>()
                         .isDoubleAuthenticated(context);
@@ -102,8 +112,6 @@ class _TwoFactorAuthenticationPageState
                     context.read<AuthenticationInfo>().logAttempt(
                         FirebaseAuth.instance.currentUser!.uid, snapshot);
                   });
-                } else {
-                  debugPrint('Is not double authenticated');
                 }
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -125,6 +133,8 @@ class _TwoFactorAuthenticationPageState
                     const SizedBox(
                       height: 15,
                     ),
+                    // The PIN fields, to accept the fallback PIN 
+                    // (Fully optional)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -139,6 +149,7 @@ class _TwoFactorAuthenticationPageState
                     const SizedBox(
                       height: 10,
                     ),
+                    // The PIN submit button (Fully optional)
                     ElevatedButton(
                         onPressed: () async {
                           var pin = _fieldOne.text +
@@ -153,13 +164,16 @@ class _TwoFactorAuthenticationPageState
                                 .doc(FirebaseAuth.instance.currentUser!.uid)
                                 .get()
                                 .then((documentSnapshot) {
+                              // If the fallback PIN is correct
                               if (documentSnapshot['fallbackPin'] == pin) {
                                 final docRef = FirebaseFirestore.instance
                                     .collection('2fa-status')
                                     .doc(FirebaseAuth.instance.currentUser!.uid)
                                     .collection('attempts')
                                     .doc(authDocID);
-
+                                
+                                // Set the authentication attribute of the 
+                                // 2FA attempt (Firebase document) to true
                                 FirebaseFirestore.instance
                                     .runTransaction((transaction) async {
                                   transaction.update(
@@ -170,7 +184,7 @@ class _TwoFactorAuthenticationPageState
                                       debugPrint("Error updating document $e"),
                                 );
 
-                                // Update local double authentication state
+                                // Update the local double authentication state
                                 context
                                     .read<AuthenticationInfo>()
                                     .isDoubleAuthenticated(context);

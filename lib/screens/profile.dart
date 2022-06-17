@@ -16,29 +16,16 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  // Instantiate the User Info class, to use the get user info method
   user_info.UserInfo userInfo = user_info.UserInfo();
+
+  // Initialize the variable for the profile image
   PlatformFile? uploadFile;
+
   @override
   Widget build(BuildContext context) {
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // The following functions are used to generate the widget components for the edit profile page
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // Sized boxes (White spaces)
-    Widget _generateSizedBox() {
-      return const SizedBox(
-        height: 15,
-      );
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // End of widget generation functions
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-
+    // This page will obtain information on the current user, which will become
+    // obtainable via the Provider architecture
     return MultiProvider(
         providers: [
           StreamProvider<UserModel?>(
@@ -49,8 +36,12 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Builder(
           builder: (BuildContext context) {
             BuildContext rootContext = context;
+            // Using the profile information obtained from the 
+            // Provider architecture, show the profile image and the name/username
             final userProfile = Provider.of<UserModel?>(rootContext);
 
+            // If the current user's profile is not fully loaded, show a 
+            // circular progress indicator
             return userProfile == null
                 ? Scaffold(
                     body: Center(
@@ -63,10 +54,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                          // The side menu section (Drawer)
                           const Expanded(
                             flex: 1,
                             child: SideMenu(),
                           ),
+                          // The current user's profile image
                           Expanded(
                               flex: 5,
                               child: Padding(
@@ -81,11 +74,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                               .toString()),
                                     ),
                                   ]),
-                                  _generateSizedBox(),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  // The current user's name/username
                                   Text(Provider.of<UserModel?>(rootContext)!
                                       .name
                                       .toString()),
-                                  _generateSizedBox(),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  // The edit/update profile button
                                   ElevatedButton(
                                       onPressed: () {
                                         GoRouter.of(context)

@@ -13,11 +13,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // Instantiate the Post Info class, to use the get feed method
   final PostInfo postInfo = PostInfo();
+
+  // Initialize the controller and the variables for the post
   TextEditingController postController = TextEditingController();
   String? postContent;
+
   @override
   Widget build(BuildContext context) {
+    // This page depends on a future, which are the posts 
+    // in which to populate the feed
     return FutureProvider<List<PostModel>>(
       create: (context) => postInfo.getFeed(),
       initialData: const [],
@@ -27,6 +33,7 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // The side menu section (Drawer)
               const Expanded(
                 child: SideMenu(),
               ),
@@ -37,6 +44,8 @@ class _HomePageState extends State<HomePage> {
                   physics: const ScrollPhysics(),
                   child: Column(
                     children: [
+                      // The post creation section 
+                      // (Post content input field and submit button)
                       Form(
                           child: Row(
                         children: [
@@ -76,6 +85,8 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white54,
                         ),
                       ),
+                      // The feed section (Containing all of the various 
+                      // posts from followed users)
                       const Feed()
                     ],
                   ),

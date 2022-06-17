@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/authentication_info.dart';
 import '../theme/style.dart';
 
-// The widget for the side menu (drawer), which can be found 
+// The widget for the side menu (Drawer), which can be found 
 // in all of the pages after login
 class SideMenu extends StatelessWidget {
   const SideMenu({
@@ -66,7 +66,7 @@ class SideMenu extends StatelessWidget {
   }
 }
 
-// Items located within the side menu (drawer)
+// Items located within the side menu (Drawer)
 class DrawerListTile extends StatelessWidget {
   const DrawerListTile(
       {Key? key,

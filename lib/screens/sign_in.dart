@@ -12,15 +12,9 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Email and password variables declaration
+    // Declaration of email and password variables
     String email = '';
     String password = '';
-
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // The following functions are used to generate the widget components for the sign in page
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Alert dialog
     Future<dynamic> _generateAlertDialog(
@@ -43,46 +37,11 @@ class SignInPage extends StatelessWidget {
               ));
     }
 
-    // Email text field
-    Widget _generateEmailField() {
-      return EmailField(onChanged: (value) {
-        email = value;
-      });
-    }
-
-    // Password text field
-    Widget _generatePasswordField() {
-      return PasswordField(
-        onChanged: (value) {
-          password = value;
-        },
-      );
-    }
-
-    // Sized boxes (White spaces)
-    Widget _generateSizedBox() {
-      return const SizedBox(
-        height: 15,
-      );
-    }
-
-    // Page title
-    Widget _generateTitle() {
-      return Text(
-        'Sign in',
-        style: Theme.of(context).textTheme.headline1,
-      );
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // End of widget generation functions
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-
     return Scaffold(
       body: Row(
         children: [
+          // The decorative section (Inclusive of the logo and the background 
+          // effect)
           Expanded(
               child: Stack(alignment: Alignment.center, children: [
             Container(
@@ -103,6 +62,8 @@ class SignInPage extends StatelessWidget {
               ),
             ),
           ])),
+          // The sign in section (Inclusive of the title, email, and
+          // password fields)
           Expanded(
             child: Center(
               child: SizedBox(
@@ -111,12 +72,27 @@ class SignInPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _generateTitle(),
-                    _generateSizedBox(),
-                    _generateEmailField(),
-                    _generateSizedBox(),
-                    _generatePasswordField(),
-                    _generateSizedBox(),
+                    Text(
+                      'Sign in',
+                      style: Theme.of(context).textTheme.headline1,
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    EmailField(onChanged: (value) {
+                      email = value;
+                    }),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    PasswordField(
+                      onChanged: (value) {
+                        password = value;
+                      },
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
 
                     // Sign in button
                     ElevatedButton(
@@ -135,7 +111,9 @@ class SignInPage extends StatelessWidget {
                                   'The password provided is incorrect.'));
                         },
                         child: const Text('Sign in')),
-                    _generateSizedBox(),
+                    const SizedBox(
+                      height: 15,
+                    ),
 
                     // Sign up button
                     TextButton(

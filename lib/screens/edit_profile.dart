@@ -13,21 +13,14 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  // 
+  // Initialize the controller and variables for the name/username and
+  // the profile image
   PlatformFile? uploadFile;
   TextEditingController nameController = TextEditingController();
-
-  // 
   String name = '';
 
   @override
   Widget build(BuildContext context) {
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // The following functions are used to generate the widget components for the edit profile page
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-
     // Alert dialog
     Future<dynamic> _generateAlertDialog(
         BuildContext context, String title, String content) {
@@ -49,27 +42,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ));
     }
 
-    // Sized boxes (White spaces)
-    Widget _generateSizedBox() {
-      return const SizedBox(
-        height: 15,
-      );
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // End of widget generation functions
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-
     return Scaffold(
         drawer: const SideMenu(),
         body: SafeArea(
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // The side menu section (Drawer)
           const Expanded(
             flex: 1,
             child: SideMenu(),
           ),
+          // The profile image input field
           Expanded(
               flex: 5,
               child: Padding(
@@ -113,12 +95,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                     ),
                   ]),
+                  // The name/username input field
                   SizedBox(
                       width: 250,
                       child: Form(
                         child: Column(
                           children: [
-                            _generateSizedBox(),
+                            const SizedBox(
+                              height: 15,
+                            ),
                             TextFormField(
                                 controller: nameController,
                                 decoration:
@@ -126,8 +111,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 onChanged: ((value) {
                                   name = value;
                                 })),
-                            _generateSizedBox(),
-                            _generateSizedBox(),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            // Edit/Update profile button
                             ElevatedButton(
                                 onPressed: () async {
                                   final updateSuccess =
@@ -155,6 +145,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ])));
   }
 
+  // Allow user to select/pick images (Limited to jpg, jpeg, and png) 
+  // from their system
   selectImage() async {
     FilePickerResult? selectInput = await FilePicker.platform.pickFiles(
       type: FileType.custom,

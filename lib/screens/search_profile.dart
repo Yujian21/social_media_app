@@ -15,15 +15,20 @@ class SearchProfilePage extends StatefulWidget {
 }
 
 class _SearchProfilePageState extends State<SearchProfilePage> {
+  // Instantiate the User Info class, to use the get UID method
   user_info.UserInfo userInfo = user_info.UserInfo();
+
+  // Initialize the variables for the UID and name of the searched user
   String? searchedUID;
   String? searchedName;
 
+  // Whem this page loads, get the UID of the searched user via his/her
+  // name/username. Once the UID is obtained, update the state 
+  // (As well as the state variables) of the page
   @override
   void initState() {
     WidgetsBinding.instance!.addPostFrameCallback((_) async {
       searchedUID = await userInfo.getUid(widget.name.toString());
-
       setState(() {
         searchedUID;
         searchedName = widget.name.toString();
@@ -34,38 +39,20 @@ class _SearchProfilePageState extends State<SearchProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // The following functions are used to generate the widget components for the edit profile page
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // Sized boxes (White spaces)
-    Widget _generateSizedBox() {
-      return const SizedBox(
-        height: 15,
-      );
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // End of widget generation functions
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-
-    debugPrint(widget.name.toString() + ' in build method');
-    if (widget.name != searchedName) {
-      debugPrint('widget.name is not equal to searchedName');
-    } else {
-      debugPrint('widget.name is equal to searchedName');
-    }
+    // If the UID has not yet been fully initialized, show a circular progress
+    // indicator
     return searchedUID == null
         ? Scaffold(
             body: Center(
                 child: CircularProgressIndicator(
                     valueColor:
                         AlwaysStoppedAnimation<Color>(appThemeTertiary))))
-        : MultiProvider(
+        :
+        // This page depends on two streams, which will get the
+        // searched user's info, as well as the current user's
+        // following status. These values will be
+        // obtainable via the Provider architecture
+        MultiProvider(
             providers: [
                 StreamProvider<UserModel?>.value(
                     value: userInfo.getSearchedUserInfo(widget.name),
@@ -80,11 +67,14 @@ class _SearchProfilePageState extends State<SearchProfilePage> {
             child: Builder(
               builder: (BuildContext context) {
                 BuildContext rootContext = context;
+                // Using the information obtained from the Provider architecture,
+                // get the searched user's profile information and the current
+                // user's following status
                 final userProfile = Provider.of<UserModel?>(rootContext);
                 final isFollowing = Provider.of<bool?>(rootContext);
-                debugPrint('am following: ' + isFollowing.toString());
-                debugPrint(searchedUID.toString() + ' in builder');
 
+                // If the searched user's profile is not fully loaded, show a 
+                // circular progress indicator
                 return userProfile == null
                     ? Scaffold(
                         body: Center(
@@ -101,6 +91,7 @@ class _SearchProfilePageState extends State<SearchProfilePage> {
                                 flex: 1,
                                 child: SideMenu(),
                               ),
+                              // The searched user's profile image
                               Expanded(
                                   flex: 5,
                                   child: Padding(
@@ -131,11 +122,19 @@ class _SearchProfilePageState extends State<SearchProfilePage> {
                                                         .toString()),
                                               ),
                                       ]),
-                                      _generateSizedBox(),
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                      // The searched user's name/username
                                       Text(Provider.of<UserModel?>(rootContext)!
                                           .name
                                           .toString()),
-                                      _generateSizedBox(),
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                      // Follow/Unfollow button
+                                      // (Depends on the current user's
+                                      // following status)
                                       if (isFollowing != null &&
                                           isFollowing == true)
                                         ElevatedButton(

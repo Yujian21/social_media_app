@@ -15,11 +15,17 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  // Instantiate the User Info class, to use the query by name method
   user_info.UserInfo userInfo = user_info.UserInfo();
+
+  // Initialize the variable for the search text
   String search = '';
 
   @override
   Widget build(BuildContext context) {
+    // This page will constantly listen to the changes in the search input field,
+    // and update the list of users accordingly. The list of users will be
+    // obtainable via the Provider architecture
     return MultiProvider(
         providers: [
           StreamProvider<List<UserModel?>>.value(
@@ -29,7 +35,12 @@ class _SearchPageState extends State<SearchPage> {
         ],
         child: Builder(builder: (BuildContext context) {
           BuildContext rootContext = context;
+          // Using the list of users from the Provider architecture, populate
+          // the list view accordingly
           final users = Provider.of<List<UserModel?>>(rootContext);
+
+          // If the list of users has not been fully loaded yet,
+          // show a circular progress indicator
           return users == []
               ? Scaffold(
                   body: Center(
@@ -42,6 +53,7 @@ class _SearchPageState extends State<SearchPage> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // The side menu section (Drawer)
                         const Expanded(
                           flex: 1,
                           child: SideMenu(),
@@ -50,6 +62,7 @@ class _SearchPageState extends State<SearchPage> {
                           flex: 5,
                           child: Column(
                             children: [
+                              // The search input field
                               Material(
                                 child: Padding(
                                   padding:
@@ -68,6 +81,7 @@ class _SearchPageState extends State<SearchPage> {
                                   ),
                                 ),
                               ),
+                              // The list of users
                               ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: users.length,
