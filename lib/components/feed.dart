@@ -4,6 +4,7 @@ import '../components/post_tile.dart';
 import '../services/user_info.dart';
 import '../models/post.dart';
 import '../models/user.dart';
+import '../theme/style.dart';
 
 // The widget for the feed, which contains all of the relevant posts
 class Feed extends StatefulWidget {
@@ -30,8 +31,10 @@ class _FeedState extends State<Feed> {
               builder:
                   (BuildContext context, AsyncSnapshot<UserModel?> snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
+                  return Center(
+                    child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(appThemeTertiary)),
                   );
                 }
                 return PostTile(

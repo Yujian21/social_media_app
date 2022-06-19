@@ -18,7 +18,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return StreamProvider<bool?>.value(
-        value: authInfo.setupExists(),
+        value: authInfo.checkSetupExists(),
         initialData: false,
         catchError: (_, __) => null,
         child: Builder(
@@ -42,7 +42,14 @@ class _SettingsPageState extends State<SettingsPage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             setupExists!
-                                ? Container()
+                                ? ElevatedButton(
+                                    onPressed: () async {
+                                      await Provider.of<AuthenticationInfo>(
+                                              context,
+                                              listen: false)
+                                          .cancelSetup();
+                                    },
+                                    child: const Text('Cancel Setup'))
                                 : ElevatedButton(
                                     onPressed: () async {
                                       await Provider.of<AuthenticationInfo>(
@@ -51,6 +58,9 @@ class _SettingsPageState extends State<SettingsPage> {
                                           .addSetup();
                                     },
                                     child: const Text('Setup Biothenticator')),
+                            const SizedBox(
+                              height: 10,
+                            ),
                             Visibility(
                               visible: setupExists,
                               child: Container(

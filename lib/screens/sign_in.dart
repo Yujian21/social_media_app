@@ -40,7 +40,7 @@ class SignInPage extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          // The decorative section (Inclusive of the logo and the background 
+          // The decorative section (Inclusive of the logo and the background
           // effect)
           Expanded(
               child: Stack(alignment: Alignment.center, children: [
@@ -108,7 +108,11 @@ class SignInPage extends StatelessWidget {
                               () => _generateAlertDialog(
                                   context,
                                   'Incorrect password',
-                                  'The password provided is incorrect.'));
+                                  'The password provided is incorrect.'),
+                              () => _generateAlertDialog(
+                                  context,
+                                  'Invalid email',
+                                  'The provided email address is invalid.'));
                         },
                         child: const Text('Sign in')),
                     const SizedBox(

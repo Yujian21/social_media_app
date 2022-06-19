@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 
 class AuthenticationInfo extends ChangeNotifier {
+  // Declare the Firestore dedicated to Biothenticator
+  FirebaseFirestore biothenticatorFirestore =
+      FirebaseFirestore.instanceFor(app: Firebase.app('biothenticator'));
+
   // Create a Firebase Authentication service instance
   FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -13,16 +17,39 @@ class AuthenticationInfo extends ChangeNotifier {
   String get id => userId;
   bool get signedIn => userId.isNotEmpty;
 
+  /*
+  
+  Two-Factor Authentication (2FA) methods via Biothenticator
+  
+  */
+
   // Verify that 2FA is enabled for the current user
   bool doubleAuthenticationActivated = false;
   bool get doubleAuthenticationActivatedAlt => doubleAuthenticationActivated;
 
-  // Verify that the current user is double authenticated
+  // Verify that the current user has been double authenticated
   bool doubleAuthenticated = false;
   bool get doubleAuthenticatedAlt => doubleAuthenticated;
 
+  // Check if current user has 2FA enabled
+  Future<void> checkIsDoubleAuthenticated() async {
+    // Using the current user ID, verify if he/she has 2FA enabled
+    await biothenticatorFirestore
+        .collection('2fa-status')
+        .where(FieldPath.documentId, isEqualTo: auth.currentUser!.uid)
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      if (querySnapshot.docs.isNotEmpty) {
+        debugPrint('2FA entry found');
+        doubleAuthenticationActivated = true;
+      } else {
+        debugPrint('2FA entry not found');
+      }
+    });
+  }
+
   // Toggle the current user's 2FA status
-  void isDoubleAuthenticated(BuildContext context) {
+  void toggleIsDoubleAuthenticated(BuildContext context) {
     doubleAuthenticated = true;
     debugPrint('Is double authenticated.');
     notifyListeners();
@@ -30,11 +57,6 @@ class AuthenticationInfo extends ChangeNotifier {
 
   // Add the 2FA setup
   Future<void> addSetup() async {
-    // Declare the Firestore dedicated to Biothenticator
-    FirebaseApp biothenticator = Firebase.app('biothenticator');
-    FirebaseFirestore biothenticatorFirestore =
-        FirebaseFirestore.instanceFor(app: biothenticator);
-
     // Create the 2FA setup under the current user
     await biothenticatorFirestore
         .collection('2fa-setup')
@@ -42,13 +64,18 @@ class AuthenticationInfo extends ChangeNotifier {
         .set({});
   }
 
-  // Check if a 2FA setup is ongoing
-  Stream<bool?> setupExists() async* {
-    // Declare the Firestore dedicated to Biothenticator
-    FirebaseApp biothenticator = Firebase.app('biothenticator');
-    FirebaseFirestore biothenticatorFirestore =
-        FirebaseFirestore.instanceFor(app: biothenticator);
+    // Cancel the 2FA setup
+  Future<void> cancelSetup() async {
+    // Cancel the 2FA setup under the current user
+    await biothenticatorFirestore
+        .collection('2fa-setup')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .delete();
+  }
 
+
+  // Check if a 2FA setup is ongoing
+  Stream<bool?> checkSetupExists() async* {
     // Check if there exists a 2FA setup under the current user
     yield* biothenticatorFirestore
         .collection("2fa-setup")
@@ -61,11 +88,6 @@ class AuthenticationInfo extends ChangeNotifier {
 
   // Add the 2FA attempt
   Future<String> addAttempt() async {
-    // Declare the Firestore dedicated to Biothenticator
-    FirebaseApp biothenticator = Firebase.app('biothenticator');
-    FirebaseFirestore biothenticatorFirestore =
-        FirebaseFirestore.instanceFor(app: biothenticator);
-
     // Create the 2FA attempt under the current user, with
     // additional information such as the email, the platform, and the timestamp
     DocumentReference doc = await biothenticatorFirestore
@@ -84,11 +106,6 @@ class AuthenticationInfo extends ChangeNotifier {
   // Update and log the 2FA attempt
   Future<void> logAttempt(
       String userId, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) async {
-    // Declare the Firestore dedicated to Biothenticator
-    FirebaseApp biothenticator = Firebase.app('biothenticator');
-    FirebaseFirestore biothenticatorFirestore =
-        FirebaseFirestore.instanceFor(app: biothenticator);
-
     // Add the 2FA attempt to the logs
     biothenticatorFirestore
         .collection('2fa-status')
@@ -114,50 +131,61 @@ class AuthenticationInfo extends ChangeNotifier {
     });
   }
 
+  Future verifyFallbackPin(String pin, String? authDocID, Function incorrectPin,
+      Function invalidPin) async {
+    if (pin.length == 6) {
+      await biothenticatorFirestore
+          .collection('2fa-status')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get()
+          .then((documentSnapshot) {
+        // If the fallback PIN is correct
+        if (documentSnapshot['fallbackPin'] == pin) {
+           biothenticatorFirestore
+              .collection('2fa-status')
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .collection('attempts')
+              .doc(authDocID)
+              .update({'isAuthenticated': true});
+
+        
+        } else {
+          incorrectPin();
+        }
+      });
+    } else {
+      invalidPin();
+    }
+  }
+
   // Parsing the Firebase User to that of the local user model, and assigning
   // the user ID, to update the sign in status
   UserModel? createUserFromFirebaseUser(User? user) {
     if (user != null) {
-      debugPrint('User is not null.');
       var currentUser = UserModel(id: user.uid);
-      debugPrint('Local user model created!');
-      debugPrint('Local user model ID: ' + currentUser.id.toString());
       userId = user.uid;
 
       return currentUser;
     }
-    debugPrint('User is null.');
     return null;
   }
 
   // Sign in via Firebase email & password authentication
-  void firebaseSignIn(BuildContext context, String email, String password,
-      Function userNotFound, Function incorrectPassword) async {
+  void firebaseSignIn(
+      BuildContext context,
+      String email,
+      String password,
+      Function userNotFound,
+      Function incorrectPassword,
+      Function invalidEmail) async {
     try {
       // Sign in user with email & password
       await auth.signInWithEmailAndPassword(email: email, password: password);
 
-      // Firebase app dedicated to Biothenticator
-      FirebaseApp biothenticator = Firebase.app('biothenticator');
-      FirebaseFirestore biothenticatorFirestore =
-          FirebaseFirestore.instanceFor(app: biothenticator);
-
-      // Using the current user ID, verify if he/she has 2FA enabled
-      await biothenticatorFirestore
-          .collection('2fa-status')
-          .where(FieldPath.documentId, isEqualTo: auth.currentUser!.uid)
-          .get()
-          .then((QuerySnapshot querySnapshot) {
-        if (querySnapshot.docs.isNotEmpty) {
-          debugPrint('2FA entry found');
-          doubleAuthenticationActivated = true;
-        } else {
-          debugPrint('2FA entry not found');
-        }
-      });
+      // Check if 2FA has been enabled for the current user
+      await checkIsDoubleAuthenticated();
 
       createUserFromFirebaseUser(auth.currentUser);
-      debugPrint('Sign in successful');
       notifyListeners();
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -170,6 +198,11 @@ class AuthenticationInfo extends ChangeNotifier {
         case 'wrong-password':
           debugPrint('Wrong password provided for that user.');
           incorrectPassword();
+          break;
+        // If the email provided is invalid
+        case 'invalid-email':
+          debugPrint('Invalid email provided.');
+          invalidEmail();
           break;
         default:
           debugPrint(e.code);
