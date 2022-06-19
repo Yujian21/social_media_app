@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../components/side_menu.dart';
+import '../services/authentication_info.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -11,39 +13,63 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  AuthenticationInfo authInfo = AuthenticationInfo();
+
   @override
   Widget build(BuildContext context) {
-
-    return Scaffold(
-        drawer: const SideMenu(),
-        body: SafeArea(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Expanded(
-                flex: 1,
-                child: SideMenu(),
-              ),
-              Expanded(
-                flex: 5,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16)),
-                      child: QrImage(
-                        data: FirebaseAuth.instance.currentUser!.uid,
-                        size: 200,
+    return StreamProvider<bool?>.value(
+        value: authInfo.setupExists(),
+        initialData: false,
+        catchError: (_, __) => null,
+        child: Builder(
+          builder: (BuildContext context) {
+            BuildContext rootContext = context;
+            final setupExists = Provider.of<bool?>(rootContext);
+            return Scaffold(
+                drawer: const SideMenu(),
+                body: SafeArea(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Expanded(
+                        flex: 1,
+                        child: SideMenu(),
                       ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          ),
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            setupExists!
+                                ? Container()
+                                : ElevatedButton(
+                                    onPressed: () async {
+                                      await Provider.of<AuthenticationInfo>(
+                                              context,
+                                              listen: false)
+                                          .addSetup();
+                                    },
+                                    child: const Text('Setup Biothenticator')),
+                            Visibility(
+                              visible: setupExists,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16)),
+                                child: QrImage(
+                                  data: FirebaseAuth.instance.currentUser!.uid,
+                                  size: 200,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ));
+          },
         ));
   }
 }

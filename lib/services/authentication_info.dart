@@ -28,7 +28,38 @@ class AuthenticationInfo extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Add double authentication attempt to Firestore dedicated to Biothenticator
+  // Add the 2FA setup
+  Future<void> addSetup() async {
+    // Declare the Firestore dedicated to Biothenticator
+    FirebaseApp biothenticator = Firebase.app('biothenticator');
+    FirebaseFirestore biothenticatorFirestore =
+        FirebaseFirestore.instanceFor(app: biothenticator);
+
+    // Create the 2FA setup under the current user
+    await biothenticatorFirestore
+        .collection('2fa-setup')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({});
+  }
+
+  // Check if a 2FA setup is ongoing
+  Stream<bool?> setupExists() async* {
+    // Declare the Firestore dedicated to Biothenticator
+    FirebaseApp biothenticator = Firebase.app('biothenticator');
+    FirebaseFirestore biothenticatorFirestore =
+        FirebaseFirestore.instanceFor(app: biothenticator);
+
+    // Check if there exists a 2FA setup under the current user
+    yield* biothenticatorFirestore
+        .collection("2fa-setup")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.exists;
+    });
+  }
+
+  // Add the 2FA attempt
   Future<String> addAttempt() async {
     // Declare the Firestore dedicated to Biothenticator
     FirebaseApp biothenticator = Firebase.app('biothenticator');
@@ -83,7 +114,7 @@ class AuthenticationInfo extends ChangeNotifier {
     });
   }
 
-  // Parsing the Firebase User to that of the local user model, and assigning 
+  // Parsing the Firebase User to that of the local user model, and assigning
   // the user ID, to update the sign in status
   UserModel? createUserFromFirebaseUser(User? user) {
     if (user != null) {
