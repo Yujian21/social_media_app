@@ -1,6 +1,7 @@
 # social_media_app
 
-Dummy app to supplement Biothenticator.
+A dummy app to supplement Biothenticator.
+
 
 ## Getting Started
 

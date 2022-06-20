@@ -1,28 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:social_media_app/components/email_field.dart';
-import 'package:social_media_app/components/glass_morphism.dart';
-import 'package:social_media_app/components/password_field.dart';
-import 'package:social_media_app/services/authentication.dart';
-import 'package:social_media_app/theme/style.dart';
+import 'package:provider/provider.dart';
+import '../components/email_field.dart';
+import '../components/glass_morphism.dart';
+import '../components/password_field.dart';
+import '../services/authentication_info.dart';
+import '../theme/style.dart';
 
 class SignUpPage extends StatelessWidget {
   const SignUpPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Resgister Firebase Authentication service
-    AuthenticationService _authenticationService = AuthenticationService();
-
-    // Email and password variables declaration
+    // Declaration of email and password variables
     String email = '';
     String password = '';
-
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // The following functions are used to generate the widget components for the sign in page
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Alert dialog
     Future<dynamic> _generateAlertDialog(
@@ -30,9 +21,10 @@ class SignUpPage extends StatelessWidget {
       return showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
+                backgroundColor: appThemeSecondary,
                 title: Text(
                   title,
-                  style: const TextStyle(color: Colors.black38),
+                  style: const TextStyle(color: Colors.white),
                 ),
                 content: Text(content),
                 actions: <Widget>[
@@ -44,54 +36,15 @@ class SignUpPage extends StatelessWidget {
               ));
     }
 
-    // Email text field
-    Widget _generateEmailField() {
-      return EmailField(onChanged: (value) {
-        email = value;
-      });
-    }
-
-    // Password text field
-    Widget _generatePasswordField() {
-      return PasswordField(
-        onChanged: (value) {
-          password = value;
-        },
-      );
-    }
-
-    // Sized boxes (White spaces)
-    Widget _generateSizedBox() {
-      return const SizedBox(
-        height: 15,
-      );
-    }
-
-    // Page title
-    Widget _generateTitle() {
-      return Text(
-        'Sign up',
-        style: Theme.of(context).textTheme.headline1,
-      );
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-    //
-    // End of widget generation functions
-    //
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------
-
     return Scaffold(
       body: Row(
         children: [
+          // The decorative section (Inclusive of the logo and the background
+          // effect)
           Expanded(
               child: Stack(alignment: Alignment.center, children: [
             Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                colorCustomDarkBlueGrandeur,
-                colorCustomDarkBlueGrandeurAlt
-              ])),
+              decoration: BoxDecoration(color: appThemePrimary),
             ),
             Icon(
               Icons.blur_on_sharp,
@@ -108,6 +61,8 @@ class SignUpPage extends StatelessWidget {
               ),
             ),
           ])),
+          // The sign up section (Inclusive of the title, email, and
+          // password fields)
           Expanded(
             child: Center(
               child: SizedBox(
@@ -116,16 +71,31 @@ class SignUpPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _generateTitle(),
-                    _generateSizedBox(),
-                    _generateEmailField(),
-                    _generateSizedBox(),
-                    _generatePasswordField(),
-                    _generateSizedBox(),
+                    Text(
+                      'Sign up',
+                      style: Theme.of(context).textTheme.headline1,
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    EmailField(onChanged: (value) {
+                      email = value;
+                    }),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    PasswordField(
+                      onChanged: (value) {
+                        password = value;
+                      },
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
                     // Sign up button
                     ElevatedButton(
                         onPressed: () async {
-                          _authenticationService.firebaseSignUp(
+                          context.read<AuthenticationInfo>().firebaseSignUp(
                               email,
                               password,
                               () => _generateAlertDialog(

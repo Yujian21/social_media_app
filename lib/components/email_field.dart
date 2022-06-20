@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import '../theme/style.dart';
 
-// ignore: must_be_immutable
+// The widget for the email field
 class EmailField extends StatefulWidget {
-  // TextEditingController controller;
-  ValueChanged<String> onChanged;
+  final ValueChanged<String> onChanged;
 
-  EmailField({
+  const EmailField({
     Key? key,
-    // required this.controller,
     required this.onChanged,
   }) : super(key: key);
 
@@ -18,19 +17,17 @@ class EmailField extends StatefulWidget {
 class _EmailFieldState extends State<EmailField> {
   @override
   Widget build(BuildContext context) {
-    return TextField(
-        onChanged: widget.onChanged,
-        // controller: widget.controller,
-        decoration: InputDecoration(
-            fillColor: Colors.blueGrey.shade50,
-            filled: true,
+    return Theme(
+      child: TextFormField(
+          onChanged: widget.onChanged,
+          decoration: const InputDecoration(
             hintText: 'E-mail',
-            prefixIcon: const Icon(Icons.mail_outline),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.blueGrey.shade50)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.blueGrey.shade50))));
+          )),
+      data: Theme.of(context).copyWith(
+        colorScheme: ThemeData().colorScheme.copyWith(
+              primary: appThemePrimary,
+            ),
+      ),
+    );
   }
 }
