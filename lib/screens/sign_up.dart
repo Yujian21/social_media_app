@@ -15,6 +15,26 @@ class SignUpPage extends StatelessWidget {
     String email = '';
     String password = '';
 
+    // Password validation
+    bool validatePasswordStructure(String value) {
+      String pattern =
+          r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
+      RegExp regExp = RegExp(pattern);
+      return regExp.hasMatch(value);
+    }
+
+    // Empty fields validation
+    bool validateFields(String email, String password) {
+      if (email == "") {
+        return false;
+      }
+
+      if (password == "") {
+        return false;
+      }
+      return true;
+    }
+
     // Alert dialog
     Future<dynamic> _generateAlertDialog(
         BuildContext context, String title, String content) {
@@ -35,6 +55,12 @@ class SignUpPage extends StatelessWidget {
                 ],
               ));
     }
+
+    const successSnackBar = SnackBar(
+      backgroundColor: Color(0xff4cb051),
+      content: Text('Sign up successful! You will be redirected shortly.'),
+      
+    );
 
     return Scaffold(
       body: Row(
@@ -95,21 +121,31 @@ class SignUpPage extends StatelessWidget {
                     // Sign up button
                     ElevatedButton(
                         onPressed: () async {
-                          context.read<AuthenticationInfo>().firebaseSignUp(
-                              email,
-                              password,
-                              () => _generateAlertDialog(
-                                  context,
-                                  'Invalid email',
-                                  'The email that has been provided is invalid.'),
-                              () => _generateAlertDialog(
-                                  context,
-                                  'Weak password',
-                                  'The password provided is too weak.'),
-                              () => _generateAlertDialog(
-                                  context,
-                                  'Account already exists',
-                                  'This email is already in use by another account.'));
+                          validateFields(email, password)
+                              ? validatePasswordStructure(password)
+                                  ? context.read<AuthenticationInfo>().firebaseSignUp(
+                                      email,
+                                      password,
+                                      () => ScaffoldMessenger.of(context)
+                                          .showSnackBar(successSnackBar),
+                                      () => _generateAlertDialog(
+                                          context,
+                                          'Invalid email',
+                                          'The email that has been provided is invalid.'),
+                                      () => _generateAlertDialog(
+                                          context,
+                                          'Weak password',
+                                          'Please ensure that the password contains at least one upper case letter, one digit, one special character, and is at least 8 characters long.'),
+                                      () => _generateAlertDialog(
+                                          context,
+                                          'Account already exists',
+                                          'This email is already in use by another account.'))
+                                  : _generateAlertDialog(
+                                      context,
+                                      'Weak password',
+                                      'Please ensure that the password contains at least one upper case letter, one digit, one special character, and is at least 8 characters long.')
+                              : _generateAlertDialog(context, 'Empty fields',
+                                  'Please ensure that the email and password fields are not empty.');
                         },
                         child: const Text('Sign up')),
                   ],

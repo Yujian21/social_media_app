@@ -7,15 +7,21 @@ import '../services/user_info.dart' as user_info;
 
 class PostInfo {
   // Save the post created by the user
-  Future savePost(String? content) async {
-    await FirebaseFirestore.instance.collection("posts").add({
-      'content': content,
-      'creator': FirebaseAuth.instance.currentUser!.uid,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+  Future savePost(
+      String? content, Function successMessage, Function failureMessage) async {
+    if (content == null) {
+      failureMessage();
+    } else {
+      await FirebaseFirestore.instance.collection("posts").add({
+        'content': content,
+        'creator': FirebaseAuth.instance.currentUser!.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      successMessage();
+    }
   }
 
-  // Parse the post from the Firebase snapshot into 
+  // Parse the post from the Firebase snapshot into
   // the local post model
   PostModel? postFromSnapshot(DocumentSnapshot snapshot) {
     return snapshot.exists
@@ -29,7 +35,7 @@ class PostInfo {
         : null;
   }
 
-  // Parse the list of posts from the Firebase snapshot into 
+  // Parse the list of posts from the Firebase snapshot into
   // a list of the local post model
   List<PostModel> postListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
@@ -52,7 +58,7 @@ class PostInfo {
     inspect(splitUsersFollowing);
     List<PostModel> feedList = [];
 
-    // For each user that the current user is actively following, 
+    // For each user that the current user is actively following,
     // obtain all of his/her posts, parse the posts, and add it to the feed
     for (int i = 0; i < splitUsersFollowing.length; i++) {
       inspect(splitUsersFollowing.elementAt(i));
@@ -65,7 +71,7 @@ class PostInfo {
       feedList.addAll(postListFromSnapshot(querySnapshot));
     }
 
-    // Sort the feed by the timestamps of the posts 
+    // Sort the feed by the timestamps of the posts
     feedList.sort((a, b) {
       var adate = a.timestamp;
       var bdate = b.timestamp;

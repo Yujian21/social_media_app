@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:social_media_app/theme/style.dart';
 import '../components/feed.dart';
 import '../services/post.dart';
 import '../models/post.dart';
@@ -20,9 +21,30 @@ class _HomePageState extends State<HomePage> {
   TextEditingController postController = TextEditingController();
   String? postContent;
 
+  // Alert dialog
+  Future<dynamic> _generateAlertDialog(
+      BuildContext context, String title, String content) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              backgroundColor: appThemeSecondary,
+              title: Text(
+                title,
+                style: const TextStyle(color: Colors.white),
+              ),
+              content: Text(content),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
-    // This page depends on a future, which are the posts 
+    // This page depends on a future, which are the posts
     // in which to populate the feed
     return FutureProvider<List<PostModel>>(
       create: (context) => postInfo.getFeed(),
@@ -44,7 +66,7 @@ class _HomePageState extends State<HomePage> {
                   physics: const ScrollPhysics(),
                   child: Column(
                     children: [
-                      // The post creation section 
+                      // The post creation section
                       // (Post content input field and submit button)
                       Form(
                           child: Row(
@@ -71,8 +93,20 @@ class _HomePageState extends State<HomePage> {
                                 child: ElevatedButton(
                                     onPressed: () async {
                                       postInfo
-                                          .savePost(postContent)
-                                          .then((_) => postController.clear());
+                                          .savePost(
+                                              postContent,
+                                              () => _generateAlertDialog(
+                                                  context,
+                                                  'Post created',
+                                                  'The post has been successfully created!'),
+                                              () => _generateAlertDialog(
+                                                  context,
+                                                  'Content not found',
+                                                  'The post was not created. Please ensure that there is some content before posting.'))
+                                          .then((_) {
+                                        postContent = null;
+                                        postController.clear();
+                                      });
                                     },
                                     child: const Text('Post')),
                               ))
@@ -85,7 +119,7 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white54,
                         ),
                       ),
-                      // The feed section (Containing all of the various 
+                      // The feed section (Containing all of the various
                       // posts from followed users)
                       const Feed()
                     ],

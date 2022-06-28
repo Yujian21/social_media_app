@@ -64,7 +64,7 @@ class AuthenticationInfo extends ChangeNotifier {
         .set({});
   }
 
-    // Cancel the 2FA setup
+  // Cancel the 2FA setup
   Future<void> cancelSetup() async {
     // Cancel the 2FA setup under the current user
     await biothenticatorFirestore
@@ -72,7 +72,6 @@ class AuthenticationInfo extends ChangeNotifier {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .delete();
   }
-
 
   // Check if a 2FA setup is ongoing
   Stream<bool?> checkSetupExists() async* {
@@ -141,14 +140,12 @@ class AuthenticationInfo extends ChangeNotifier {
           .then((documentSnapshot) {
         // If the fallback PIN is correct
         if (documentSnapshot['fallbackPin'] == pin) {
-           biothenticatorFirestore
+          biothenticatorFirestore
               .collection('2fa-status')
               .doc(FirebaseAuth.instance.currentUser!.uid)
               .collection('attempts')
               .doc(authDocID)
               .update({'isAuthenticated': true});
-
-        
         } else {
           incorrectPin();
         }
@@ -171,13 +168,8 @@ class AuthenticationInfo extends ChangeNotifier {
   }
 
   // Sign in via Firebase email & password authentication
-  void firebaseSignIn(
-      BuildContext context,
-      String email,
-      String password,
-      Function userNotFound,
-      Function incorrectPassword,
-      Function invalidEmail) async {
+  void firebaseSignIn(BuildContext context, String email, String password,
+      Function userNotFound, Function invalidCombo) async {
     try {
       // Sign in user with email & password
       await auth.signInWithEmailAndPassword(email: email, password: password);
@@ -196,13 +188,13 @@ class AuthenticationInfo extends ChangeNotifier {
           break;
         // If the password provided is incorrect
         case 'wrong-password':
-          debugPrint('Wrong password provided for that user.');
-          incorrectPassword();
+          debugPrint('Invalid email and password combination.');
+          invalidCombo();
           break;
         // If the email provided is invalid
         case 'invalid-email':
-          debugPrint('Invalid email provided.');
-          invalidEmail();
+          debugPrint('Invalid email and password combination.');
+          invalidCombo();
           break;
         default:
           debugPrint(e.code);
@@ -212,8 +204,8 @@ class AuthenticationInfo extends ChangeNotifier {
   }
 
   // Sign up via Firebase email & password authentication
-  void firebaseSignUp(String email, String password, Function invalidEmail,
-      Function weakPassword, Function emailInUse) async {
+  void firebaseSignUp(String email, String password, Function success,
+      Function invalidEmail, Function weakPassword, Function emailInUse) async {
     try {
       // Sign up user with email & password
       await auth.createUserWithEmailAndPassword(
@@ -225,7 +217,7 @@ class AuthenticationInfo extends ChangeNotifier {
 
       // Reset local double authentication status to false
       doubleAuthenticationActivated = false;
-      debugPrint('Sign up successful');
+      success();
 
       // Create new user entry in Firestore
       await FirebaseFirestore.instance

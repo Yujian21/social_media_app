@@ -98,21 +98,18 @@ class SignInPage extends StatelessWidget {
                     ElevatedButton(
                         onPressed: () {
                           context.read<AuthenticationInfo>().firebaseSignIn(
-                              context,
-                              email,
-                              password,
-                              () => _generateAlertDialog(
-                                  context,
-                                  'Account does not exist',
-                                  'The provided email address is not associated to any account.'),
-                              () => _generateAlertDialog(
-                                  context,
-                                  'Incorrect password',
-                                  'The password provided is incorrect.'),
-                              () => _generateAlertDialog(
-                                  context,
-                                  'Invalid email',
-                                  'The provided email address is invalid.'));
+                                context,
+                                email,
+                                password,
+                                () => _generateAlertDialog(
+                                    context,
+                                    'Account does not exist',
+                                    'The provided email address is not associated to any account.'),
+                                () => _generateAlertDialog(
+                                    context,
+                                    'Invalid email & password combination',
+                                    'Please double-check the email and password, to ensure that they are correct.'),
+                              );
                         },
                         child: const Text('Sign in')),
                     const SizedBox(

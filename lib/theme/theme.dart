@@ -5,6 +5,9 @@ import '../theme/style.dart';
 // (e.g., text font family, text colour, primary colour, etc.)
 class AppTheme {
   static final ThemeData custom = ThemeData(
+      snackBarTheme: const SnackBarThemeData(
+          contentTextStyle:
+              TextStyle(fontFamily: 'Montserrat', color: Colors.white54)),
       textSelectionTheme: const TextSelectionThemeData(
         cursorColor: Colors.white54,
         selectionColor: Colors.white54,
