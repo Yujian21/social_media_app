@@ -187,6 +187,7 @@ class _TwoFactorAuthenticationPageState
                               _fieldFour.text +
                               _fieldFive.text +
                               _fieldSix.text;
+
                           context.read<AuthenticationInfo>().verifyFallbackPin(
                               pin,
                               authDocID,
@@ -195,7 +196,9 @@ class _TwoFactorAuthenticationPageState
                                   'Incorrect PIN',
                                   'The PIN provided was incorrect.'),
                               () => _generateAlertDialog(context, 'Invalid PIN',
-                                  'The PIN provided was invalid.'));
+                                  'The PIN provided was invalid.'),
+                              () => _generateAlertDialog(context, 'Missing PIN',
+                                  'Please enter a PIN.'));
                         },
                         child: const Text('Authenticate')),
                   ],

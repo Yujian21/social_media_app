@@ -59,7 +59,6 @@ class SignUpPage extends StatelessWidget {
     const successSnackBar = SnackBar(
       backgroundColor: Color(0xff4cb051),
       content: Text('Sign up successful! You will be redirected shortly.'),
-      
     );
 
     return Scaffold(

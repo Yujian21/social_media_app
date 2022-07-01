@@ -36,11 +36,11 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Builder(
           builder: (BuildContext context) {
             BuildContext rootContext = context;
-            // Using the profile information obtained from the 
+            // Using the profile information obtained from the
             // Provider architecture, show the profile image and the name/username
             final userProfile = Provider.of<UserModel?>(rootContext);
 
-            // If the current user's profile is not fully loaded, show a 
+            // If the current user's profile is not fully loaded, show a
             // circular progress indicator
             return userProfile == null
                 ? Scaffold(
@@ -66,13 +66,26 @@ class _ProfilePageState extends State<ProfilePage> {
                                 padding: const EdgeInsets.only(top: 16),
                                 child: Column(children: [
                                   Stack(children: <Widget>[
-                                    CircleAvatar(
-                                      radius: 125,
-                                      backgroundImage: NetworkImage(
-                                          Provider.of<UserModel?>(rootContext)!
-                                              .profileImageUrl
-                                              .toString()),
-                                    ),
+                                    Provider.of<UserModel?>(rootContext)!
+                                            .profileImageUrl
+                                            .toString()
+                                            .isEmpty
+                                        ? CircleAvatar(
+                                            radius: 125,
+                                            backgroundColor: appThemeSecondary,
+                                            child: const Icon(
+                                              Icons.person,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : CircleAvatar(
+                                            radius: 125,
+                                            backgroundImage: NetworkImage(
+                                                Provider.of<UserModel?>(
+                                                        rootContext)!
+                                                    .profileImageUrl
+                                                    .toString()),
+                                          ),
                                   ]),
                                   const SizedBox(
                                     height: 15,

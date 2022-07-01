@@ -57,7 +57,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                               listen: false)
                                           .addSetup();
                                     },
-                                    child: const Text('Setup Biothenticator')),
+                                    child: const Text(
+                                        'Setup Two-Factor Authentication with Biothenticator')),
                             const SizedBox(
                               height: 10,
                             ),

@@ -16,6 +16,18 @@ class SignInPage extends StatelessWidget {
     String email = '';
     String password = '';
 
+    // Empty fields validation
+    bool validateFields(String email, String password) {
+      if (email == "") {
+        return false;
+      }
+
+      if (password == "") {
+        return false;
+      }
+      return true;
+    }
+
     // Alert dialog
     Future<dynamic> _generateAlertDialog(
         BuildContext context, String title, String content) {
@@ -97,19 +109,24 @@ class SignInPage extends StatelessWidget {
                     // Sign in button
                     ElevatedButton(
                         onPressed: () {
-                          context.read<AuthenticationInfo>().firebaseSignIn(
-                                context,
-                                email,
-                                password,
-                                () => _generateAlertDialog(
+                          validateFields(email, password)
+                              ? context
+                                  .read<AuthenticationInfo>()
+                                  .firebaseSignIn(
                                     context,
-                                    'Account does not exist',
-                                    'The provided email address is not associated to any account.'),
-                                () => _generateAlertDialog(
-                                    context,
-                                    'Invalid email & password combination',
-                                    'Please double-check the email and password, to ensure that they are correct.'),
-                              );
+                                    email,
+                                    password,
+                                    () => _generateAlertDialog(
+                                        context,
+                                        'Account does not exist',
+                                        'The provided email address is not associated to any account.'),
+                                    () => _generateAlertDialog(
+                                        context,
+                                        'Invalid email & password combination',
+                                        'Please double-check the email and password, to ensure that they are correct.'),
+                                  )
+                              : _generateAlertDialog(context, 'Empty fields',
+                                  'Please ensure that the email and password fields are not empty.');
                         },
                         child: const Text('Sign in')),
                     const SizedBox(

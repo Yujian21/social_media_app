@@ -131,7 +131,7 @@ class AuthenticationInfo extends ChangeNotifier {
   }
 
   Future verifyFallbackPin(String pin, String? authDocID, Function incorrectPin,
-      Function invalidPin) async {
+      Function invalidPin, Function missingPin) async {
     if (pin.length == 6) {
       await biothenticatorFirestore
           .collection('2fa-status')
@@ -150,6 +150,8 @@ class AuthenticationInfo extends ChangeNotifier {
           incorrectPin();
         }
       });
+    } else if (pin.isEmpty) {
+      missingPin();
     } else {
       invalidPin();
     }
@@ -188,12 +190,10 @@ class AuthenticationInfo extends ChangeNotifier {
           break;
         // If the password provided is incorrect
         case 'wrong-password':
-          debugPrint('Invalid email and password combination.');
           invalidCombo();
           break;
         // If the email provided is invalid
         case 'invalid-email':
-          debugPrint('Invalid email and password combination.');
           invalidCombo();
           break;
         default:

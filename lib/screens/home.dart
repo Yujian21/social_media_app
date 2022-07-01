@@ -101,7 +101,7 @@ class _HomePageState extends State<HomePage> {
                                                   'The post has been successfully created!'),
                                               () => _generateAlertDialog(
                                                   context,
-                                                  'Content not found',
+                                                  'Empty post',
                                                   'The post was not created. Please ensure that there is some content before posting.'))
                                           .then((_) {
                                         postContent = null;

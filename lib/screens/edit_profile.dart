@@ -19,6 +19,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
   TextEditingController nameController = TextEditingController();
   String name = '';
 
+  // Empty fields validation
+  bool validateFields(String name, PlatformFile? uploadFile) {
+    if (name.isEmpty && uploadFile == null) {
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Alert dialog
@@ -120,20 +128,31 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             // Edit/Update profile button
                             ElevatedButton(
                                 onPressed: () async {
-                                  final updateSuccess =
-                                      await user_info.UserInfo()
-                                          .updateProfile(uploadFile, name);
+                                  if (validateFields(name, uploadFile) ==
+                                      true) {
+                                    final updateSuccess =
+                                        await user_info.UserInfo()
+                                            .updateProfile(uploadFile, name);
 
-                                  if (updateSuccess == false) {
-                                    _generateAlertDialog(context, 'Not updated',
-                                        'The name that was provided has already been taken!');
+                                    if (updateSuccess == false) {
+                                      _generateAlertDialog(
+                                          context,
+                                          'Update failed',
+                                          'The name that was provided has already been taken!');
+                                    } else {
+                                      _generateAlertDialog(context, 'Updated',
+                                          'Your profile has been successfully updated!');
+                                      setState(() {
+                                        uploadFile = null;
+                                        name = '';
+                                        nameController.clear();
+                                      });
+                                    }
                                   } else {
-                                    _generateAlertDialog(context, 'Updated',
-                                        'Your profile has been successfully updated!');
-                                    setState(() {
-                                      uploadFile = null;
-                                      nameController.clear();
-                                    });
+                                    _generateAlertDialog(
+                                        context,
+                                        'Empty fields',
+                                        'Please ensure that at least one information is changed.');
                                   }
                                 },
                                 child: const Text('Update profile'))
@@ -145,7 +164,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ])));
   }
 
-  // Allow user to select/pick images (Limited to jpg, jpeg, and png) 
+  // Allow user to select/pick images (Limited to jpg, jpeg, and png)
   // from their system
   selectImage() async {
     FilePickerResult? selectInput = await FilePicker.platform.pickFiles(
