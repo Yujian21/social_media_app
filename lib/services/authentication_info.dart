@@ -130,6 +130,7 @@ class AuthenticationInfo extends ChangeNotifier {
     });
   }
 
+  // Verify the fallback PIN
   Future verifyFallbackPin(String pin, String? authDocID, Function incorrectPin,
       Function invalidPin, Function missingPin) async {
     if (pin.length == 6) {
@@ -151,8 +152,10 @@ class AuthenticationInfo extends ChangeNotifier {
         }
       });
     } else if (pin.isEmpty) {
+      // If a fallback PIN was not provided, but the callback was invoked
       missingPin();
     } else {
+      // If the fallback PIN provided is invalid (<6 digits)
       invalidPin();
     }
   }
@@ -170,8 +173,7 @@ class AuthenticationInfo extends ChangeNotifier {
   }
 
   // Sign in via Firebase email & password authentication
-  void firebaseSignIn(BuildContext context, String email, String password,
-      Function userNotFound, Function invalidCombo) async {
+  void firebaseSignIn(BuildContext context, String email, String password, Function invalidCombo, Function invalidEmail) async {
     try {
       // Sign in user with email & password
       await auth.signInWithEmailAndPassword(email: email, password: password);
@@ -186,7 +188,7 @@ class AuthenticationInfo extends ChangeNotifier {
         // If the user is not found
         case 'user-not-found':
           debugPrint('No user found for that email.');
-          userNotFound();
+          invalidCombo();
           break;
         // If the password provided is incorrect
         case 'wrong-password':
@@ -194,7 +196,7 @@ class AuthenticationInfo extends ChangeNotifier {
           break;
         // If the email provided is invalid
         case 'invalid-email':
-          invalidCombo();
+          invalidEmail();
           break;
         default:
           debugPrint(e.code);
@@ -213,7 +215,7 @@ class AuthenticationInfo extends ChangeNotifier {
 
       // Store the current user in memory for further use later on
       final user = auth.currentUser;
-      createUserFromFirebaseUser(auth.currentUser);
+      createUserFromFirebaseUser(user);
 
       // Reset local double authentication status to false
       doubleAuthenticationActivated = false;

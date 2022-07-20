@@ -118,12 +118,12 @@ class SignInPage extends StatelessWidget {
                                     password,
                                     () => _generateAlertDialog(
                                         context,
-                                        'Account does not exist',
-                                        'The provided email address is not associated to any account.'),
+                                        'Incorrect email and/or password',
+                                        'Please double-check the email and password, to ensure that they are correct.'),
                                     () => _generateAlertDialog(
                                         context,
-                                        'Invalid email & password combination',
-                                        'Please double-check the email and password, to ensure that they are correct.'),
+                                        'Invalid email',
+                                        'Please double-check the email, to ensure that it is in the correct format.'),
                                   )
                               : _generateAlertDialog(context, 'Empty fields',
                                   'Please ensure that the email and password fields are not empty.');
